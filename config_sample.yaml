@@ -1,0 +1,62 @@
+merge_workspace: '/tmp/merge-workspace'
+filters_def:
+  merge_cmd:
+    module: extras.filters.MergeCmdFilter
+  redmine_resolve:
+    module: extras.filters.ResolveRedmineFilter
+    url: 'http://localhost'
+    api_key: '1234'
+  redmine_version:
+    module: extras.filters.VersionRedmineFilter
+    url: 'http://localhost'
+    api_key: '1234'
+  tests:
+    module: extras.filters.TestsFilter
+    path: 'tests'
+hooks_def:
+  gitlab_merge_request:
+    module: extras.filters.MergeRequestGitlabFilter
+    url: 'http://localhost'
+    token: '1234'
+    project_id: 1
+    title: 'Auto merge conflict {source} into {target}'
+hooks:
+  - gitlab_merge_request
+dependencies:
+  # Merge master to develop
+  '^master$':
+    targets:
+      - develop
+      - v3.0
+#          - v\d+\.\d+
+  # Merge task branches into appropriate version branches
+  # when resolved ('Resolve #\d+' cmd in commit message)
+  # and mark redmine task as 'Resolved'
+  '^(?P<task_id>\\d+)\\-.+$':
+    filters:
+      - merge_cmd
+      - redmine_resolve
+      - redmine_version
+    targets:
+      - v{redmine_version}
+  # Merge version updates into next versions one-by-one
+#      'v(?P<major>\\d+)\.(?P<minor>\\d+)':
+  '^v\\d+\\.\\d+$':
+    filters:
+      - next_version
+    targets:
+      - v{next_version}
+  # Update master branch with current version updates
+  # To release new version just change source branch and make push to it
+  '^v3\\.0$':
+    hooks:
+      - tests
+    targets:
+      - master
+  # Update develop branch with current development version updates
+  # To release new version just change source branch and make push to it
+  '^v4\\.0$':
+#        hooks:
+#          - tests
+    targets:
+      - develop
