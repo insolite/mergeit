@@ -95,3 +95,9 @@ class PushHandler():
     def get_path(self):
         """Returns git repo merge workspace path"""
         return os.path.join(self.config['merge_workspace'], self.name)
+
+    def get_branches(self, remote=False):
+        self.repo.remote().fetch()
+        branches = [re.match(r'[\s\*]+{}(.+)'.format(r'origin\/' if remote else ''), branch).group(1)
+                    for branch in self.repo.git.branch(*(['-r'] if remote else [])).split('\n')]
+        return branches

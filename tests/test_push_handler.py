@@ -107,3 +107,19 @@ class PushHandlerTest(TestCase):
         self.push_handler.handle()
 
         merge_pair_mock.assert_called_once_with(ANY, target_branch, [], [])
+
+    # @patch('push_handler.PushHandler.merge_pair')
+    def test_get_branches_local(self):
+        #
+
+        branches = self.push_handler.get_branches(remote=False)
+
+        self.assertSetEqual(set(branches), {'master', 'develop'})
+
+    # @patch('push_handler.PushHandler.merge_pair')
+    def test_get_branches_remote(self):
+        #
+
+        branches = self.push_handler.get_branches(remote=True)
+
+        self.assertSetEqual(set(branches), {'master', 'develop'})

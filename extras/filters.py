@@ -69,10 +69,8 @@ class NextVersionFilter(Filter):
         return version
 
     def run(self, source_match, source_branch, target_branch):
-        self.push_handler.repo.remote().fetch()
-        branches = [re.match(r'[\s\*]+origin\/(.+)', branch).group(1)
-                    for branch in self.push_handler.repo.git.branch('-r').split('\n')]
-        branches = sorted(branches, key=lambda x: self.get_version(x))
+        branches = sorted(self.push_handler.get_branches(remote=True),
+                          key=lambda x: self.get_version(x))
         try:
             return branches[branches.index(source_branch) + 1]
         except IndexError:
