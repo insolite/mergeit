@@ -15,7 +15,7 @@ filters_def:
     path: 'tests'
 hooks_def:
   gitlab_merge_request:
-    module: extras.filters.MergeRequestGitlabFilter
+    module: extras.hooks.MergeRequestGitlabHook
     url: 'http://localhost'
     token: '1234'
     project_id: 1
