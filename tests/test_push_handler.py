@@ -32,7 +32,7 @@ class PushHandlerTest(TestCase):
         self.repo.create_remote(DEFAULT_REMOTE, self.remote_repo.working_dir)
         self.commit_new_file('test.txt')
         self.repo.git.checkout('-b', 'develop')
-        self.repo.remote().push()
+        self.repo.remote().push(self.repo.active_branch.name)
         self.repo.git.checkout('master')
         commits = [{"id": "ffffff",
                     "message": "Test commit message\\n",
@@ -54,7 +54,7 @@ class PushHandlerTest(TestCase):
             f.write('test data')
         self.repo.git.add(name)
         self.repo.git.commit('-m', '"Test commit message"')
-        self.repo.remote().push()
+        self.repo.remote().push(self.repo.active_branch.name)
 
     def get_path(self):
         return os.path.join(WORKSPACE, REPO_NAME)
