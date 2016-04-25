@@ -56,7 +56,7 @@ class PushHandler():
         try:
             for filter_name in filter:
                 pre_filter = self.filters[filter_name](self)
-                target_branch = pre_filter(source_match, self.branch, target_branch)
+                target_branch = pre_filter.run(source_match, self.branch, target_branch)
                 if not target_branch:
                     break
             if target_branch:
@@ -71,7 +71,7 @@ class PushHandler():
                 raise MergeCancel
             for hook_name in hooks:
                 hook = self.filters[hook_name](self, conflict)
-                hook(source_match, self.branch, target_branch)
+                hook.run(source_match, self.branch, target_branch)
         except MergeCancel:
             pass
         else:

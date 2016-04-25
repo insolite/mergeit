@@ -6,9 +6,6 @@ class Runner():
         self.push_handler = push_handler
         self.config = config
 
-    def __call__(self, source_match, source_branch, target_branch):
-        self.run(source_match, source_branch, target_branch)
-
     def run(self, *args, **kwargs):
         raise NotImplementedError
 

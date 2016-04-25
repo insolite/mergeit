@@ -79,8 +79,8 @@ class PushHandlerTest(TestCase):
         self.commit_new_file(filename)
         test_filter = Mock()
         test_hook = Mock()
-        test_filter().return_value = target_branch
-        test_hook().return_value = target_branch
+        test_filter().run.return_value = target_branch
+        test_hook().run.return_value = target_branch
         test_filter_module = 'test_filter'
         test_hook_module = 'test_hook'
         self.push_handler.filters = {test_filter_module: test_filter,
@@ -95,8 +95,8 @@ class PushHandlerTest(TestCase):
         self.repo.git.reset('--hard', '{}/{}'.format(self.repo.remote().name, target_branch))
         self.repo.git.clean('-df')
         self.assertTrue(os.path.exists(os.path.join(self.get_path(), filename)))
-        test_filter().assert_called_once_with(ANY, source_branch, target_branch)
-        test_hook().assert_called_once_with(ANY, source_branch, target_branch)
+        test_filter().run.assert_called_once_with(ANY, source_branch, target_branch)
+        test_hook().run.assert_called_once_with(ANY, source_branch, target_branch)
 
     @patch('push_handler.PushHandler.merge_pair')
     def test_handle(self, merge_pair_mock):
