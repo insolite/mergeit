@@ -1,6 +1,5 @@
 import os.path
 import shutil
-import asyncio
 from unittest import TestCase
 from unittest.mock import Mock, ANY, patch
 
@@ -8,13 +7,6 @@ from git import Repo
 
 from push_handler import PushHandler, DEFAULT_REMOTE
 from config import Config
-
-
-def get_mock_coro(return_value):
-    @asyncio.coroutine
-    def mock_coro(*args, **kwargs):
-        return return_value
-    return Mock(wraps=mock_coro)
 
 
 REPO_NAME = 'test_repo'
