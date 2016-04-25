@@ -18,5 +18,5 @@ class Filter(Runner):
 
 class Hook(Runner):
 
-    def run(self, source_branch, target_branch, cancelled, conflicted):
+    def run(self, source_branch, target_branch, conflicted):
         raise NotImplementedError

@@ -16,7 +16,7 @@ class YamlFileConfigSource(ConfigSource):
         return yaml.load(open(self.filename).read())
 
 
-class Config(dict):
+class Config():
 
     def __init__(self, config_source):
         super().__init__()
@@ -29,6 +29,9 @@ class Config(dict):
 
     def __setitem__(self, key, value):
         self.data[key] = value
+
+    def get(self, key, default=None):
+        return self.data.get(key, default)
 
     def reload(self):
         config = self.config_source.get()

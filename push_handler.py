@@ -6,7 +6,7 @@ from git import Repo
 from git.exc import GitCommandError
 from exceptions import MergeCancel
 
-from runner import Runner
+from runner import Filter, Hook
 
 
 APPLICATION_NAME = 'mergeit'
@@ -26,16 +26,20 @@ class PushHandler():
         else:
             self.repo = Repo.clone_from(self.uri, self.get_path())
         self.filters = {}
+        self.hooks = {}
         self.init_filters()
 
     def init_filters(self):
         """Import all configured filter modules"""
-        for name, filter_data in self.config.get('filters_def', {}).items():
-            filter_kwargs = filter_data.copy()
-            module_name, class_name = filter_kwargs.pop('module').rsplit('.', 1)
-            filter_class = getattr(import_module(module_name), class_name)
-            if isinstance(filter_class, Runner):
-                self.filters[name] = filter_class
+        for config_key, filter_base_class, dst in (('filters_def', Filter, self.filters), # TODO: refactor it
+                                                   ('hooks_def', Hook, self.hooks)):
+            for name, filter_data in self.config.get(config_key, {}).items():
+                filter_kwargs = filter_data.copy()
+                module_name, class_name = filter_kwargs.pop('module').rsplit('.', 1)
+                module = import_module(module_name)
+                filter_class = getattr(module, class_name)
+                if issubclass(filter_class, filter_base_class):
+                    dst[name] = filter_class(self, **filter_kwargs)
 
     def fresh_checkout(self, target_branch):
         """Do a full reset of the working dir and checkout fresh branch from remote"""
@@ -55,8 +59,7 @@ class PushHandler():
         """Execute pre-filters, merge source branch into target branch and execute post-filters"""
         try:
             for filter_name in filter:
-                pre_filter = self.filters[filter_name](self)
-                target_branch = pre_filter.run(source_match, self.branch, target_branch)
+                target_branch = self.filters[filter_name].run(source_match, self.branch, target_branch)
                 if not target_branch:
                     break
             if target_branch:
@@ -70,8 +73,7 @@ class PushHandler():
             else:
                 raise MergeCancel
             for hook_name in hooks:
-                hook = self.filters[hook_name](self, conflict)
-                hook.run(source_match, self.branch, target_branch)
+                self.hooks[hook_name].run(self.branch, target_branch, conflict)
         except MergeCancel:
             pass
         else:
@@ -83,14 +85,16 @@ class PushHandler():
         and run merge_pair() for all corresponding targets
 
         """
+        global_filters = self.config.get('filters', [])
+        global_hooks = self.config.get('hooks', [])
         for source_branch_regexp, target_rule in self.config['dependencies'].items():
             source_match = re.match(source_branch_regexp, self.branch)
             if source_match:
                 for target_branch in target_rule['targets']:
                     self.merge_pair(source_match,
                                     target_branch,
-                                    target_rule.get('filters', []),
-                                    target_rule.get('hooks', []))
+                                    global_filters + target_rule.get('filters', []),
+                                    global_hooks + target_rule.get('hooks', []))
 
     def get_path(self):
         """Returns git repo merge workspace path"""

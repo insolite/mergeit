@@ -77,16 +77,18 @@ class PushHandlerTest(TestCase):
         target_branch = 'develop'
         self.repo.git.checkout(source_branch)
         self.commit_new_file(filename)
-        test_filter = Mock()
-        test_hook = Mock()
-        test_filter().run.return_value = target_branch
+        test_filter_class = Mock()
+        test_hook_class = Mock()
+        test_filter = test_filter_class()
+        test_hook = test_hook_class()
+        test_filter.run.return_value = target_branch
         test_hook().run.return_value = target_branch
         test_filter_module = 'test_filter'
         test_hook_module = 'test_hook'
-        self.push_handler.filters = {test_filter_module: test_filter,
-                                     test_hook_module: test_hook}
-        import_mock(test_filter_module).return_value = test_filter
-        import_mock(test_hook_module).return_value = test_hook
+        self.push_handler.filters = {test_filter_module: test_filter}
+        self.push_handler.hooks = {test_hook_module: test_hook}
+        import_mock(test_filter_module).return_value = test_filter_class
+        import_mock(test_hook_module).return_value = test_hook_class
 
         self.push_handler.merge_pair(source_branch, target_branch, [test_filter_module], [test_hook_module])
 
@@ -95,8 +97,8 @@ class PushHandlerTest(TestCase):
         self.repo.git.reset('--hard', '{}/{}'.format(self.repo.remote().name, target_branch))
         self.repo.git.clean('-df')
         self.assertTrue(os.path.exists(os.path.join(self.get_path(), filename)))
-        test_filter().run.assert_called_once_with(ANY, source_branch, target_branch)
-        test_hook().run.assert_called_once_with(ANY, source_branch, target_branch)
+        test_filter.run.assert_called_once_with(ANY, source_branch, target_branch) # TODO: ANY - regexp match
+        test_hook.run.assert_called_once_with(source_branch, target_branch, False)
 
     @patch('push_handler.PushHandler.merge_pair')
     def test_handle(self, merge_pair_mock):
@@ -106,7 +108,7 @@ class PushHandlerTest(TestCase):
 
         self.push_handler.handle()
 
-        merge_pair_mock.assert_called_once_with(ANY, target_branch, [], [])
+        merge_pair_mock.assert_called_once_with(ANY, target_branch, [], []) # FIXME: pass filters and hooks
 
     # @patch('push_handler.PushHandler.merge_pair')
     def test_get_branches_local(self):
