@@ -26,14 +26,13 @@ class RedmineFilter(Filter):
     def update_task(self, id, data):
         response = requests.put(urljoin(self.config['url'],
                                         '/issues/{}.json'.format(id)),
-                                data={'key': self.config['api_key'], 'issue': data})
-        return json.loads(response.text)['issue']
+                                json={'key': self.config['api_key'], 'issue': data})
 
     def get_statuses(self):
         response = requests.get(urljoin(self.config['url'],
                                         '/issue_statuses.json'),
                                 data={'key': self.config['api_key']})
-        return json.loads(response.text)['issue_statuses']['issue_status']
+        return json.loads(response.text)['issue_statuses']
 
 
 class VersionRedmineFilter(RedmineFilter):
