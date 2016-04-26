@@ -65,7 +65,7 @@ class PushHandler():
             if target_branch:
                 self.fresh_checkout(target_branch)
                 try:
-                    self.repo.git.merge(self.branch)
+                    self.repo.git.merge('{}/{}'.format(self.repo.remote(), self.branch))
                 except GitCommandError:
                     conflict = True
                 else:
