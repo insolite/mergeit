@@ -1,15 +1,11 @@
 import json
 import asyncio
+import argparse
 
 from aiohttp import web
 
 from push_handler import PushHandler
 from config import Config, YamlFileConfigSource
-
-
-HOOK_HOST = '0.0.0.0'
-HOOK_PORT = 1234
-PROJECT_CONFIG = 'config_sample.yaml'
 
 
 @asyncio.coroutine
@@ -41,5 +37,9 @@ def run(host, port, project_config):
 
 
 if __name__ == '__main__':
-    # TODO: argparse
-    run(HOOK_HOST, HOOK_PORT, PROJECT_CONFIG)
+    parser = argparse.ArgumentParser(description='gitlab hook server')
+    parser.add_argument('-H', '--host', type=str, default='*', help='Listen host')
+    parser.add_argument('-p', '--port', type=str, default='1234', help='Listen port')
+    parser.add_argument('-c', '--config', type=str, help='Config file')
+    args = parser.parse_args()
+    run(args.host, args.port, args.config)
