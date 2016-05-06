@@ -13,14 +13,30 @@ class ResolveRedmineFilterTest(FilterTest):
 
     @patch('extras.filters.ResolveRedmineFilter.get_statuses')
     @patch('extras.filters.ResolveRedmineFilter.update_task')
-    def test_run(self, update_task_mock, get_statuses_mock):
+    def test_run_resolve(self, update_task_mock, get_statuses_mock):
         source_branch = '1234-feature'
         target_branch = 'develop'
         source_match = re.match('^(?P<task_id>\\d+)\\-.+$', source_branch)
         status_id = 1
         get_statuses_mock.return_value = [{'name': 'Resolved', 'id': status_id}]
+        self.push_handler_mock.commits = [{'message': 'Add new feature\n@resolve\n@merge'}]
 
         new_target_branch = self.resolve_redmine_filter.run(source_match, source_branch, target_branch)
 
         self.assertEqual(new_target_branch, target_branch)
         update_task_mock.assert_called_once_with(source_match.groupdict()['task_id'], {'status_id': status_id})
+
+    @patch('extras.filters.ResolveRedmineFilter.get_statuses')
+    @patch('extras.filters.ResolveRedmineFilter.update_task')
+    def test_run_not_resolve(self, update_task_mock, get_statuses_mock):
+        source_branch = '1234-feature'
+        target_branch = 'develop'
+        source_match = re.match('^(?P<task_id>\\d+)\\-.+$', source_branch)
+        status_id = 1
+        get_statuses_mock.return_value = [{'name': 'Resolved', 'id': status_id}]
+        self.push_handler_mock.commits = [{'message': 'Add new feature\n@merge'}]
+
+        new_target_branch = self.resolve_redmine_filter.run(source_match, source_branch, target_branch)
+
+        self.assertEqual(new_target_branch, target_branch)
+        update_task_mock.assert_not_called()
