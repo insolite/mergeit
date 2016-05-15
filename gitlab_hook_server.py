@@ -1,11 +1,13 @@
 import json
 import asyncio
 import argparse
+import logging.config
 
 from aiohttp import web
 
 from push_handler import PushHandler
 from config import Config, YamlFileConfigSource
+from logging_extras import ContextAdapter, init_logging
 
 
 @asyncio.coroutine
@@ -28,12 +30,17 @@ def push(request, config):
 
 
 def run(host, port, project_config):
+    logger = logging.getLogger(__name__)
     loop = asyncio.get_event_loop()
     app = web.Application()
     config = Config(YamlFileConfigSource(project_config))
     app.router.add_route('POST', '/push', lambda request: push(request, config))
+    logger.info('application_start')
     loop.run_until_complete(loop.create_server(app.make_handler(), host, port))
-    loop.run_forever()
+    try:
+        loop.run_forever()
+    except KeyboardInterrupt:
+        logger.info('application_interrupt')
 
 
 if __name__ == '__main__':
@@ -42,4 +49,5 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--port', type=str, default='1234', help='Listen port')
     parser.add_argument('-c', '--config', type=str, help='Config file')
     args = parser.parse_args()
+    init_logging()
     run(args.host, args.port, args.config)

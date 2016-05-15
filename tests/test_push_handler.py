@@ -7,13 +7,14 @@ from git import Repo
 
 from push_handler import PushHandler, DEFAULT_REMOTE
 from config import Config
+from tests.common import MergeitTest
 
 
 REPO_NAME = 'test_repo'
 WORKSPACE = 'fixtures'
 
 
-class PushHandlerTest(TestCase):
+class PushHandlerTest(MergeitTest):
 
     def setUp(self):
         super().setUp()
