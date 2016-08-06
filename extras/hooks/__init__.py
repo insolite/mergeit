@@ -1,0 +1,1 @@
+from .conflict_merge_request_gitlab_hook import ConflictMergeRequestGitlabHook

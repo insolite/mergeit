@@ -1,17 +1,12 @@
 import json
-import os.path
-import shutil
 import asyncio
 from unittest import TestCase
-from unittest.mock import MagicMock, ANY, patch
+from unittest.mock import MagicMock, patch
 
-from git import Repo
 from aiohttp import web
+from asynctest.mock import CoroutineMock
 
-from push_handler import PushHandler, DEFAULT_REMOTE
 from gitlab_hook_server import push
-from config import Config
-from tests.common import get_mock_coro
 import gitlab_hook_server
 
 
@@ -31,7 +26,7 @@ class GitlabHookServerTest(TestCase):
         git_ssh_url = 'http://localhost'
         commits = [{}]
         # TODO: add real request data
-        request_mock.payload.read = get_mock_coro(json.dumps(
+        request_mock.payload.read = CoroutineMock(return_value=json.dumps(
             {'repository': {'name': project_name,
                             'git_ssh_url': git_ssh_url},
              'ref': 'refs/heads/{}'.format(branch),

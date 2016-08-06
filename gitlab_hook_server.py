@@ -7,7 +7,7 @@ from aiohttp import web
 
 from push_handler import PushHandler
 from config import Config, YamlFileConfigSource
-from logging_extras import ContextAdapter, init_logging
+from logging_extras import init_logging
 
 
 @asyncio.coroutine

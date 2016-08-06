@@ -1,11 +1,9 @@
 import os.path
 import shutil
-from unittest import TestCase
 from unittest.mock import MagicMock, ANY, patch
 from importlib import import_module
 
 from git import Repo
-from git.exc import GitCommandError
 
 from push_handler import PushHandler, DEFAULT_REMOTE
 from config import Config
@@ -224,7 +222,7 @@ class PushHandlerTest(MergeitTest):
 
         self.push_handler.process_merge_pair(source_branch, target_branch, [test_filter_module], [test_hook_module])
 
-        self.push_handler.merge.assert_not_called(target_branch)
+        self.push_handler.merge.assert_not_called()
         test_filter.run.assert_called_once_with(ANY, source_branch, target_branch) # TODO: ANY - regexp match
         test_hook.run.assert_not_called()
 

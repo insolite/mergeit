@@ -1,5 +1,4 @@
 import json
-import asyncio
 import unittest
 from unittest.mock import MagicMock
 
@@ -26,10 +25,3 @@ class MergeitTest(unittest.TestCase):
     def setUpClass(cls):
         super().setUpClass()
         init_logging('../logs/gitlab_hook_server.log')
-
-
-def get_mock_coro(return_value):
-    @asyncio.coroutine
-    def mock_coro(*args, **kwargs):
-        return return_value
-    return MagicMock(wraps=mock_coro)

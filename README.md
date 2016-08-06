@@ -25,6 +25,7 @@ python3 gitlab_hook_server.py -H 0.0.0.0 -p 1234 -c config_sample.yaml
 ```
 
 To display help run:
+
 ```bash
 python3 gitlab_hook_server.py -h
 ```
@@ -41,7 +42,7 @@ First of all you define branch dependencies in a way _"source-target branches"_.
 
 Optionally filters and hooks can be defined for each dependency. Filters can cancel merge or change target branch before merge depending on push event info. Hooks are mostly used to send notifications about merge result, close tasks in task manager or cancel push merge if i. e. unittests fails.
 
-When push event occurs on some branch, push handler matches name of this branch accross all patterns and runs _merge process_ for _source_ into _target_. The _merge process_ is completed in 3 steps:
+When push event occurs on some branch, push handler matches name of this branch across all patterns and runs _merge process_ for _source_ into _target_. The _merge process_ is completed in 3 steps:
 
 * Executing filters
 * Actual GIT merge operation

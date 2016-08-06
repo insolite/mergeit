@@ -89,12 +89,12 @@ class PushHandler():
         self.logger.info('merge_end', target=target_branch, conflict=conflict)
         return conflict
 
-    def process_merge_pair(self, source_match, target_branch, filter, hooks):
+    def process_merge_pair(self, source_match, target_branch, filters, hooks):
         """Execute pre-filters, merge source branch into target branch and execute post-filters"""
         self.logger.info('merge_pair', target=target_branch)
         try:
             self.logger.info('filters_start')
-            for filter_name in filter:
+            for filter_name in filters:
                 self.logger.info('running_filter', name=filter_name)
                 target_branch = self.filters[filter_name].run(source_match, self.branch, target_branch)
                 self.logger.info('new_target_branch', target=target_branch)
@@ -130,9 +130,9 @@ class PushHandler():
             if source_match:
                 for target_branch in target_rule['targets']:
                     self.process_merge_pair(source_match,
-                                    target_branch,
-                                    global_filters + target_rule.get('filters', []),
-                                    global_hooks + target_rule.get('hooks', []))
+                                            target_branch,
+                                            global_filters + target_rule.get('filters', []),
+                                            global_hooks + target_rule.get('hooks', []))
 
     def get_path(self):
         """Returns git repo merge workspace path"""
