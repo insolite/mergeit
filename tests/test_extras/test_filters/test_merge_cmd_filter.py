@@ -1,17 +1,16 @@
 import re
-from unittest.mock import patch, Mock
 
 from extras.filters import MergeCmdFilter
-from tests.common import FilterTest
+from tests.common import RunnerTest
 
 
-class NextVersionFilterTest(FilterTest):
+class NextVersionFilterTest(RunnerTest):
 
     def setUp(self):
         super().setUp()
         self.merge_cmd_filter = MergeCmdFilter(self.push_handler_mock)
 
-    def test_run_merge(self):
+    def test_run__merge(self):
         source_branch = '1234-feature'
         target_branch = 'develop'
         source_match = re.match('^(?P<task_id>\\d+)\\-.+$', source_branch)
@@ -22,7 +21,7 @@ class NextVersionFilterTest(FilterTest):
 
         self.assertEqual(new_target_branch, target_branch)
 
-    def test_run_do_not_merge(self):
+    def test_run__do_not_merge(self):
         source_branch = '1234-feature'
         target_branch = 'develop'
         source_match = re.match('^(?P<task_id>\\d+)\\-.+$', source_branch)

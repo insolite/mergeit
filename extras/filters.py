@@ -17,20 +17,21 @@ class TestsFilter(Filter):
 
 class RedmineFilter(Filter):
 
+    def get_url(self, url):
+        return urljoin(self.config['url'], url)
+
     def get_task(self, id):
-        response = requests.get(urljoin(self.config['url'],
-                                        '/issues/{}.json'.format(id)),
+        response = requests.get(self.get_url('/issues/{}.json'.format(id)),
                                 data={'key': self.config['api_key']})
         return json.loads(response.text)['issue']
 
     def update_task(self, id, data):
-        response = requests.put(urljoin(self.config['url'],
-                                        '/issues/{}.json'.format(id)),
+        response = requests.put(self.get_url('/issues/{}.json'.format(id)),
                                 json={'key': self.config['api_key'], 'issue': data})
+        # TODO: return response data
 
     def get_statuses(self):
-        response = requests.get(urljoin(self.config['url'],
-                                        '/issue_statuses.json'),
+        response = requests.get(self.get_url('/issue_statuses.json'),
                                 data={'key': self.config['api_key']})
         return json.loads(response.text)['issue_statuses']
 

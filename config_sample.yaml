@@ -23,19 +23,13 @@ hooks_def:
 hooks:
   - gitlab_merge_request
 dependencies:
-  # Merge master to develop
-  '^master$':
-    targets:
-      - develop
-      - v3.0
-#          - v\d+\.\d+
   # Merge task branches into appropriate version branches
   # when resolved ('Resolve #\d+' cmd in commit message)
   # and mark redmine task as 'Resolved'
   '^(?P<task_id>\\d+)\\-.+$':
     filters:
-      - merge_cmd
       - redmine_resolve
+      - merge_cmd
       - redmine_version
     targets:
       - v{redmine_version}
