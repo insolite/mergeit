@@ -21,7 +21,12 @@ python3 test.py
 Run hook handle server:
 
 ```bash
-python3 gitlab_hook_server.py
+python3 gitlab_hook_server.py -H 0.0.0.0 -p 1234 -c config_sample.yaml
+```
+
+To display help run:
+```bash
+python3 gitlab_hook_server.py -h
 ```
 
 ## Features
