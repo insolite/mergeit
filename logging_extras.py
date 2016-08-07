@@ -1,10 +1,19 @@
 import logging.config
 import json
 import datetime
+import sys
 from json.encoder import JSONEncoder
 
 
 LOGGING_FORMAT = '%(asctime)s %(levelname)-7s %(message)-20s %(context)s'
+
+
+def uncaught_exception(exctype, value, tb):
+    logger = ContextAdapter(logging.getLogger(__name__), {})
+    try:
+        raise value
+    except:
+        logger.critical('uncaught_exception', name=exctype.__name__, exc_info=True)
 
 
 def init_logging(filename='logs/gitlab_hook_server.log'):
@@ -50,6 +59,7 @@ def init_logging(filename='logs/gitlab_hook_server.log'):
             },
         }
     })
+    sys.excepthook = uncaught_exception
 
 
 class ColoredFormatter(logging.Formatter):
