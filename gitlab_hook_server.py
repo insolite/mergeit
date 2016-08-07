@@ -43,7 +43,7 @@ def run(host, port, project_config):
         logger.info('application_interrupt')
 
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser(description='gitlab hook server')
     parser.add_argument('-H', '--host', type=str, default='*', help='Listen host')
     parser.add_argument('-p', '--port', type=str, default='1234', help='Listen port')
@@ -51,3 +51,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     init_logging()
     run(args.host, args.port, args.config)
+
+
+if __name__ == '__main__':
+    main()
