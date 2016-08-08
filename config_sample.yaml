@@ -22,7 +22,7 @@ filters_def:
     user_id: 1
 hooks_def:
   gitlab_merge_request:
-    module: extras.hooks.MergeRequestGitlabHook
+    module: extras.hooks.ConflictMergeRequestGitlabHook
     url: 'http://localhost'
     token: '1234'
     project_id: 1

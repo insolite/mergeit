@@ -15,7 +15,7 @@ pip3 install -r requirements.txt
 Run tests (optionally):
 
 ```bash
-python3 test.py
+python3 -m unittest discover tests
 ```
 
 Run hook handle server:

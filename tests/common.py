@@ -24,4 +24,4 @@ class MergeitTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        init_logging('../logs/gitlab_hook_server.log')
+        init_logging('logs/gitlab_hook_server.log')
