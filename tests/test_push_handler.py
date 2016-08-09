@@ -236,6 +236,21 @@ class PushHandlerTest(MergeitTest):
 
         self.push_handler.process_merge_pair.assert_called_once_with(ANY, target_branch, [], []) # FIXME: pass filters and hooks
 
+    def test_handle__variables(self):
+        source_version = '3\\.0'
+        target_version = '4\\.0'
+        source_branch = 'v{source_version}'
+        target_branch = 'v{target_version}'
+        self.push_handler.branch = 'v3.0'
+        self.configure({'dependencies': {'^{}$'.format(source_branch): {'targets': [target_branch]}},
+                        'variables': {'source_version': source_version,
+                                      'target_version': target_version}})
+        self.push_handler.process_merge_pair = MagicMock()
+
+        self.push_handler.handle()
+
+        self.push_handler.process_merge_pair.assert_called_once_with(ANY, target_branch.format(target_version=target_version), [], []) # FIXME: pass filters and hooks
+
     # @patch('push_handler.PushHandler.merge_pair')
     def test_get_branches__local(self):
         #

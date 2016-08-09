@@ -27,6 +27,9 @@ hooks_def:
     token: '1234'
     project_id: 1
     title: 'Auto merge conflict {source} into {target}'
+variables:
+  production_version: '3\\.0'
+  develop_version: '4\\.0'
 hooks:
   - gitlab_merge_request
 dependencies:
@@ -56,11 +59,11 @@ dependencies:
       - master
   # Update stage branch with current version updates
   # To release new version just change source branch and make push to it
-  '^v3\\.0$':
+  '^v{production_version}$':
     targets:
       - stage
   # Update develop branch with current development version updates
   # To release new version just change source branch and make push to it
-  '^v4\\.0$':
+  '^v{develop_version}$':
     targets:
       - develop
