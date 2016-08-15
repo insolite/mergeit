@@ -1,7 +1,9 @@
 import json
 from urllib.parse import urljoin
+
 import requests
-from runner import Filter
+
+from core.runner import Filter
 
 
 class RedmineFilter(Filter):

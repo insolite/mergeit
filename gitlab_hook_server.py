@@ -5,8 +5,9 @@ import logging.config
 
 from aiohttp import web
 
-from push_handler import PushHandler
-from config import Config, YamlFileConfigSource
+from core.push_handler import PushHandler
+from core.config.config import Config
+from core.config.yaml_config_source import YamlFileConfigSource
 from logging_extras import init_logging
 
 

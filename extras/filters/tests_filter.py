@@ -1,5 +1,6 @@
 import unittest
-from runner import Filter
+
+from core.runner import Filter
 
 
 class TestsFilter(Filter):

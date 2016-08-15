@@ -1,4 +1,4 @@
-from runner import Filter
+from core.runner import Filter
 from extras.api.gitlab_api import GitlabApi
 
 

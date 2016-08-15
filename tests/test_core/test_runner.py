@@ -1,9 +1,7 @@
-import json
-import asyncio
 from unittest import TestCase
-from unittest.mock import MagicMock, patch, ANY
+from unittest.mock import MagicMock
 
-from runner import Runner, Filter, Hook
+from core.runner import Runner, Filter, Hook
 
 
 class RunnerTest(TestCase):

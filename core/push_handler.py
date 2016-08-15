@@ -5,10 +5,10 @@ from importlib import import_module
 
 from git import Repo
 from git.exc import GitCommandError
-from exceptions import MergeCancel
 
+from core.exceptions import MergeCancel
 from logging_extras import ContextAdapter
-from runner import Filter, Hook
+from core.runner import Filter, Hook
 
 
 APPLICATION_NAME = 'mergeit'

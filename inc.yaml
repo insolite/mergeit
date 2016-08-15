@@ -1,0 +1,29 @@
+merge_workspace: '/tmp/merge-workspace'
+filters_def:
+  merge_cmd:
+    module: extras.filters.MergeCmdFilter
+  redmine_resolve:
+    module: extras.filters.ResolveRedmineFilter
+    url: 'http://localhost'
+    api_key: '1234'
+  redmine_version:
+    module: extras.filters.VersionRedmineFilter
+    url: 'http://localhost'
+    api_key: '1234'
+  tests:
+    module: extras.filters.TestsFilter
+    path: 'tests'
+  merge_approval:
+    module: extras.filters.MergeRequestGitlabFilter
+    url: 'http://localhost'
+    token: '1234'
+    project_id: 1
+    title: 'Auto merge conflict {source} into {target}'
+    user_id: 1
+hooks_def:
+  gitlab_merge_request:
+    module: extras.hooks.ConflictMergeRequestGitlabHook
+    url: 'http://localhost'
+    token: '1234'
+    project_id: 1
+    title: 'Auto merge conflict {source} into {target}'

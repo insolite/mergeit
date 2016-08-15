@@ -1,19 +1,3 @@
-import yaml
-
-
-class ConfigSource():
-
-    def get(self):
-        raise NotImplementedError
-
-
-class YamlFileConfigSource(ConfigSource):
-
-    def __init__(self, filename):
-        self.filename = filename
-
-    def get(self):
-        return yaml.load(open(self.filename).read())
 
 
 class Config():

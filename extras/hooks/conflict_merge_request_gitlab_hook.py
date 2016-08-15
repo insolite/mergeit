@@ -1,4 +1,4 @@
-from runner import Hook
+from core.runner import Hook
 from extras.api.gitlab_api import GitlabApi
 
 
