@@ -12,7 +12,7 @@ from logging_extras import init_logging
 
 @asyncio.coroutine
 def push(request, config):
-    data = json.loads((yield from request.payload.read()).decode())
+    data = json.loads((yield from request.content.read()).decode())
     project_name = data['repository']['name']
     branch = data['ref'].split('refs/heads/')[1]
     config.reload()

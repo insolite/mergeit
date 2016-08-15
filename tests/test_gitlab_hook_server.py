@@ -25,7 +25,7 @@ class GitlabHookServerTest(TestCase):
         git_ssh_url = 'http://localhost'
         commits = [{}]
         # TODO: add real request data
-        request_mock.payload.read = CoroutineMock(return_value=json.dumps(
+        request_mock.content.read = CoroutineMock(return_value=json.dumps(
             {'repository': {'name': project_name,
                             'git_ssh_url': git_ssh_url},
              'ref': 'refs/heads/{}'.format(branch),
