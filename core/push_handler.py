@@ -15,6 +15,12 @@ APPLICATION_NAME = 'mergeit'
 DEFAULT_REMOTE = 'origin'
 
 
+class SafeDict(dict):
+
+    def __missing__(self, key):
+        return '{' + key + '}'
+
+
 class PushHandler():
 
     def __init__(self, config, name, branch, uri, commits):
@@ -126,12 +132,12 @@ class PushHandler():
         global_hooks = self.config.get('hooks', [])
         variables = self.config.get('variables', {})
         for source_branch_regexp, target_rule in self.config['dependencies'].items():
-            source_branch_regexp = source_branch_regexp.format(**variables)
+            source_branch_regexp = source_branch_regexp.format(**SafeDict(variables))
             source_match = re.match(source_branch_regexp, self.branch)
             self.logger.info('source_match', match=bool(source_match), regexp=source_branch_regexp)
             if source_match:
                 for target_branch in target_rule['targets']:
-                    target_branch = target_branch.format(**variables)
+                    target_branch = target_branch.format(**SafeDict(variables))
                     self.process_merge_pair(source_match,
                                             target_branch,
                                             global_filters + target_rule.get('filters', []),
