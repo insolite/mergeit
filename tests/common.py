@@ -1,8 +1,9 @@
 import json
 import unittest
+from time import time
 from unittest.mock import MagicMock
 
-from gitlab_hook_server import init_logging
+from mergeit.scripts.run_server import init_logging
 
 
 class ResponseMock(MagicMock):
@@ -24,4 +25,4 @@ class MergeitTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        init_logging('logs/gitlab_hook_server.log')
+        init_logging('/tmp/mergeit_test_{}.log'.format(int(time())))

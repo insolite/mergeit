@@ -1,5 +1,5 @@
-from core.runner import Filter
-from extras.api.gitlab_api import GitlabApi
+from mergeit.extras.api.gitlab_api import GitlabApi
+from mergeit.core.runner import Filter
 
 
 class MergeRequestGitlabFilter(Filter):

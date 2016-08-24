@@ -1,4 +1,4 @@
-from extras.filters import RedmineFilter
+from mergeit.extras.filters import RedmineFilter
 
 
 class VersionRedmineFilter(RedmineFilter):

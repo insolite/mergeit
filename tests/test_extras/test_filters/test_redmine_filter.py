@@ -1,9 +1,9 @@
 from unittest.mock import patch, MagicMock
 from urllib.parse import urljoin
 
-from extras.filters import RedmineFilter
+from mergeit.extras.filters import RedmineFilter
 from tests.common import RunnerTest, ResponseMock
-import extras.filters.redmine_filter
+import mergeit.extras.filters.redmine_filter
 
 
 class RedmineFilterTest(RunnerTest):
@@ -28,7 +28,7 @@ class RedmineFilterTest(RunnerTest):
         url = MagicMock()
         self.redmine_filter.get_url = MagicMock(return_value=url)
 
-        with patch.object(extras.filters.redmine_filter, 'requests') as requests_mock:
+        with patch.object(mergeit.extras.filters.redmine_filter, 'requests') as requests_mock:
             requests_mock.get = MagicMock(return_value=ResponseMock({'issue': expected_issue_data}))
             issue_data = self.redmine_filter.get_task(task_id)
 
@@ -42,7 +42,7 @@ class RedmineFilterTest(RunnerTest):
         url = MagicMock()
         self.redmine_filter.get_url = MagicMock(return_value=url)
 
-        with patch.object(extras.filters.redmine_filter, 'requests') as requests_mock:
+        with patch.object(mergeit.extras.filters.redmine_filter, 'requests') as requests_mock:
             requests_mock.put = MagicMock()
             self.redmine_filter.update_task(task_id, issue_data)
 
@@ -55,7 +55,7 @@ class RedmineFilterTest(RunnerTest):
         url = MagicMock()
         self.redmine_filter.get_url = MagicMock(return_value=url)
 
-        with patch.object(extras.filters.redmine_filter, 'requests') as requests_mock:
+        with patch.object(mergeit.extras.filters.redmine_filter, 'requests') as requests_mock:
             requests_mock.get = MagicMock(return_value=ResponseMock({'issue_statuses': expected_issue_statuses}))
             issue_data = self.redmine_filter.get_statuses()
 

@@ -1,6 +1,6 @@
 import re
 
-from extras.filters import MergeCmdFilter
+from mergeit.extras.filters import MergeCmdFilter
 from tests.common import RunnerTest
 
 

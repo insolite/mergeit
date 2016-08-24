@@ -1,5 +1,6 @@
 import yaml
-from core.config.config_source import ConfigSource
+
+from .config_source import ConfigSource
 
 
 class YamlFileConfigSource(ConfigSource):

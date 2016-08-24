@@ -6,10 +6,10 @@ merGeIT allows to handle git push events and do automatic merges according to co
 
 ## Install
 
-Install required modules:
+Install package:
 
 ```bash
-pip3 install -r requirements.txt
+python3 setup.py install
 ```
 
 Run tests (optionally):
@@ -21,7 +21,7 @@ python3 -m unittest discover tests
 Run hook handle server:
 
 ```bash
-python3 gitlab_hook_server.py -H 0.0.0.0 -p 1234 -c config_sample.yaml
+mergeit -H 0.0.0.0 -p 1234 -c config_samples/full.yaml -l test.log
 ```
 
 To display help run:

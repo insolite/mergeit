@@ -1,24 +1,16 @@
-import logging
-import re
 import os
+import re
 from importlib import import_module
 
+from context_logging import getLogger
 from git import Repo
 from git.exc import GitCommandError
-from context_logging import getLogger
 
-from core.exceptions import MergeCancel
-from core.runner import Filter, Hook
-
+from .safe_dict import SafeDict
+from .exceptions import MergeCancel
 
 APPLICATION_NAME = 'mergeit'
 DEFAULT_REMOTE = 'origin'
-
-
-class SafeDict(dict):
-
-    def __missing__(self, key):
-        return '{' + key + '}'
 
 
 class PushHandler():
@@ -47,15 +39,14 @@ class PushHandler():
     def init_runners(self):
         """Import all configured filter modules"""
         self.logger.info('configuring_runners')
-        for config_key, runner_base_class, dst in (('filters_def', Filter, self.filters), # TODO: refactor it
-                                                   ('hooks_def', Hook, self.hooks)):
+        for config_key, dst in (('filters_def', self.filters), # TODO: refactor it
+                                ('hooks_def', self.hooks)):
             for name, runner_data in self.config.get(config_key, {}).items():
                 runner_kwargs = runner_data.copy()
                 module_name, class_name = runner_kwargs.pop('module').rsplit('.', 1)
                 module = import_module(module_name)
                 runner_class = getattr(module, class_name)
-                if issubclass(runner_class, runner_base_class):
-                    dst[name] = runner_class(self, **runner_kwargs)
+                dst[name] = runner_class(self, **runner_kwargs)
 
     def fresh_checkout(self, target_branch):
         """Do a full reset of the working dir and checkout fresh branch from remote"""

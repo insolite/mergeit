@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import MagicMock
 
-from core.runner import Runner, Filter, Hook
+from mergeit.core.runner import Runner, Filter, Hook
 
 
 class RunnerTest(TestCase):

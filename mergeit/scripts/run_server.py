@@ -1,4 +1,5 @@
 import sys
+import os.path
 import json
 import asyncio
 import argparse
@@ -7,15 +8,17 @@ import logging.config
 from aiohttp import web
 from context_logging import uncaught_exception, getLogger
 
-from core.push_handler import PushHandler
-from core.config.config import Config
-from core.config.yaml_config_source import YamlFileConfigSource
+from mergeit.core.push_handler import PushHandler
+from mergeit.core.config.config import Config
+from mergeit.core.config.yaml_config_source import YamlFileConfigSource
 
 
 LOGGING_FORMAT = '%(asctime)s %(levelname)-7s %(message)-20s %(context)s'
 
 
-def init_logging(filename='logs/gitlab_hook_server.log'):
+def init_logging(log_dir):
+    if not os.path.exists(log_dir):
+        os.mkdir(log_dir)
     logging.config.dictConfig({
         'version': 1,
         'disable_existing_loggers': False,
@@ -43,7 +46,7 @@ def init_logging(filename='logs/gitlab_hook_server.log'):
             'file': {
                 'level': 'DEBUG',
                 'class': 'logging.handlers.WatchedFileHandler',
-                'filename': filename,
+                'filename': os.path.join(log_dir, 'server.log'),
                 'formatter': 'standard',
             },
         },
@@ -99,8 +102,9 @@ def main():
     parser.add_argument('-H', '--host', type=str, default='*', help='Listen host')
     parser.add_argument('-p', '--port', type=str, default='1234', help='Listen port')
     parser.add_argument('-c', '--config', type=str, help='Config file')
+    parser.add_argument('-l', '--log', type=str, default='/var/log/mergeit', help='Logs dir')
     args = parser.parse_args()
-    init_logging()
+    init_logging(args.log)
     run(args.host, args.port, args.config)
 
 

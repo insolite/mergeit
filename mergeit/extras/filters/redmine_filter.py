@@ -3,7 +3,7 @@ from urllib.parse import urljoin
 
 import requests
 
-from core.runner import Filter
+from mergeit.core.runner import Filter
 
 
 class RedmineFilter(Filter):

@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 from tests.common import RunnerTest
-from extras.filters.merge_request_gitlab_filter import MergeRequestGitlabFilter
+from mergeit.extras.filters.merge_request_gitlab_filter import MergeRequestGitlabFilter
 
 
 class MergeRequestGitlabFilterTest(RunnerTest):

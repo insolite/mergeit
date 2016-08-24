@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 from tests.common import RunnerTest
-from extras.hooks import ConflictMergeRequestGitlabHook
+from mergeit.extras.hooks import ConflictMergeRequestGitlabHook
 
 
 class MergeRequestGitlabHookTest(RunnerTest):

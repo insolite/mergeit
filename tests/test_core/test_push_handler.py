@@ -5,9 +5,9 @@ from importlib import import_module
 
 from git import Repo
 
-from core import push_handler
-from core.push_handler import PushHandler, DEFAULT_REMOTE
-from core.config.config import Config
+from mergeit.core import push_handler
+from mergeit.core.push_handler import PushHandler, DEFAULT_REMOTE
+from mergeit.core.config.config import Config
 from tests.common import MergeitTest
 
 
@@ -90,7 +90,7 @@ class PushHandlerTest(MergeitTest):
         filter_module_name = 'test_filter'
         filter_class_name = 'TestFilter'
         with open(os.path.join(WORKSPACE, '{}.py').format(filter_module_name), 'w') as f:
-            f.write('from core.runner import Filter\n'
+            f.write('from mergeit.core.runner import Filter\n'
                     'class {}(Filter): pass'.format(filter_class_name))
 
         filter_data = {'module': '{}.{}.{}'.format(WORKSPACE, filter_module_name, filter_class_name)}
@@ -100,7 +100,7 @@ class PushHandlerTest(MergeitTest):
         hook_module_name = 'test_hook'
         hook_class_name = 'TestHook'
         with open(os.path.join(WORKSPACE, '{}.py').format(hook_module_name), 'w') as f:
-            f.write('from core.runner import Hook\n'
+            f.write('from mergeit.core.runner import Hook\n'
                     'class {}(Hook): pass'.format(hook_class_name))
         hook_data = {'module': '{}.{}.{}'.format(WORKSPACE, hook_module_name, hook_class_name)}
         hook_extra = {'foo': 24}
@@ -175,7 +175,7 @@ class PushHandlerTest(MergeitTest):
 
         self.assertTrue(conflict)
 
-    @patch('core.push_handler.import_module')
+    @patch('mergeit.core.push_handler.import_module')
     def test_process_merge_pair__merge(self, import_mock):
         # self.configure({})
         source_branch = 'master'
@@ -201,7 +201,7 @@ class PushHandlerTest(MergeitTest):
         test_filter.run.assert_called_once_with(ANY, source_branch, target_branch) # TODO: ANY - regexp match
         test_hook.run.assert_called_once_with(source_branch, target_branch, conflict)
 
-    @patch('core.push_handler.import_module')
+    @patch('mergeit.core.push_handler.import_module')
     def test_process_merge_pair__merge_cancel(self, import_mock):
         # self.configure({})
         source_branch = 'master'

@@ -1,4 +1,4 @@
-from core.runner import Filter
+from mergeit.core.runner import Filter
 
 
 class MergeCmdFilter(Filter):

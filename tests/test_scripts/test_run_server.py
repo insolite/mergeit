@@ -1,12 +1,12 @@
-import json
 import asyncio
+import json
 from unittest import TestCase
 from unittest.mock import MagicMock, patch, ANY
 
 from aiohttp import web
 from asynctest.mock import CoroutineMock
 
-import gitlab_hook_server
+from mergeit.scripts import run_server
 
 
 class GitlabHookServerTest(TestCase):
@@ -31,9 +31,10 @@ class GitlabHookServerTest(TestCase):
              'ref': 'refs/heads/{}'.format(branch),
              'commits': commits}).encode())
 
-        with patch.object(gitlab_hook_server.asyncio, 'get_event_loop', MagicMock(return_value=loop_mock)) as get_event_loop_mock,\
-             patch.object(gitlab_hook_server, 'PushHandler') as PushHandlerMock:
-                 response = self.loop.run_until_complete(gitlab_hook_server.push(request_mock, config_mock))
+        with patch.object(run_server.asyncio, 'get_event_loop', MagicMock(return_value=loop_mock)) as get_event_loop_mock,\
+             patch.object(run_server, 'PushHandler') as PushHandlerMock:
+                 response = self.loop.run_until_complete(
+                     run_server.push(request_mock, config_mock))
 
         get_event_loop_mock.assert_called_once_with()
         self.assertIsInstance(response, web.Response)
@@ -59,11 +60,11 @@ class GitlabHookServerTest(TestCase):
         app.make_handler = MagicMock(return_value=app_handler)
         loop.create_server = MagicMock(return_value=server)
 
-        with patch.object(gitlab_hook_server.asyncio, 'get_event_loop', MagicMock(return_value=loop)) as get_event_loop_mock,\
-             patch.object(gitlab_hook_server.web, 'Application', MagicMock(return_value=app)) as ApplicationMock,\
-             patch.object(gitlab_hook_server, 'Config', MagicMock(return_value=config)) as ConfigMock,\
-             patch.object(gitlab_hook_server, 'YamlFileConfigSource', MagicMock(return_value=config_source)) as YamlFileConfigSourceMock:
-            gitlab_hook_server.run(host, port, config_file)
+        with patch.object(run_server.asyncio, 'get_event_loop', MagicMock(return_value=loop)) as get_event_loop_mock,\
+             patch.object(run_server.web, 'Application', MagicMock(return_value=app)) as ApplicationMock,\
+             patch.object(run_server, 'Config', MagicMock(return_value=config)) as ConfigMock,\
+             patch.object(run_server, 'YamlFileConfigSource', MagicMock(return_value=config_source)) as YamlFileConfigSourceMock:
+            run_server.run(host, port, config_file)
 
         get_event_loop_mock.assert_called_once_with()
         ApplicationMock.assert_called_once_with()
@@ -89,11 +90,11 @@ class GitlabHookServerTest(TestCase):
         loop.create_server = MagicMock(return_value=server)
         loop.run_forever = MagicMock(side_effect=KeyboardInterrupt)
 
-        with patch.object(gitlab_hook_server.asyncio, 'get_event_loop', MagicMock(return_value=loop)) as get_event_loop_mock,\
-             patch.object(gitlab_hook_server.web, 'Application', MagicMock(return_value=app)) as ApplicationMock,\
-             patch.object(gitlab_hook_server, 'Config', MagicMock(return_value=config)) as ConfigMock,\
-             patch.object(gitlab_hook_server, 'YamlFileConfigSource', MagicMock(return_value=config_source)) as YamlFileConfigSourceMock:
-            gitlab_hook_server.run(host, port, config_file)
+        with patch.object(run_server.asyncio, 'get_event_loop', MagicMock(return_value=loop)) as get_event_loop_mock,\
+             patch.object(run_server.web, 'Application', MagicMock(return_value=app)) as ApplicationMock,\
+             patch.object(run_server, 'Config', MagicMock(return_value=config)) as ConfigMock,\
+             patch.object(run_server, 'YamlFileConfigSource', MagicMock(return_value=config_source)) as YamlFileConfigSourceMock:
+            run_server.run(host, port, config_file)
 
         get_event_loop_mock.assert_called_once_with()
         ApplicationMock.assert_called_once_with()
@@ -110,12 +111,12 @@ class GitlabHookServerTest(TestCase):
         parser = MagicMock()
         parser.parse_args = MagicMock(return_value=args)
 
-        with patch.object(gitlab_hook_server, 'init_logging') as init_logging_mock,\
-             patch.object(gitlab_hook_server, 'run') as run_mock,\
-             patch.object(gitlab_hook_server.argparse, 'ArgumentParser', MagicMock(return_value=parser)) as ArgumentParserMock:
-            gitlab_hook_server.main()
+        with patch.object(run_server, 'init_logging') as init_logging_mock,\
+             patch.object(run_server, 'run') as run_mock,\
+             patch.object(run_server.argparse, 'ArgumentParser', MagicMock(return_value=parser)) as ArgumentParserMock:
+            run_server.main()
 
         ArgumentParserMock.assert_called_once_with(description=ANY)
         parser.parse_args.assert_called_once_with()
-        init_logging_mock.assert_called_once_with()
+        init_logging_mock.assert_called_once_with(args.log)
         run_mock.assert_called_once_with(args.host, args.port, args.config)

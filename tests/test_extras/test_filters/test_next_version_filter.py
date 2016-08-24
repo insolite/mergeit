@@ -1,7 +1,7 @@
 import re
 from unittest.mock import MagicMock, call
 
-from extras.filters import NextVersionFilter
+from mergeit.extras.filters import NextVersionFilter
 from tests.common import RunnerTest
 
 

@@ -1,7 +1,7 @@
 import re
 from unittest.mock import MagicMock
 
-from extras.filters import VersionRedmineFilter
+from mergeit.extras.filters import VersionRedmineFilter
 from tests.common import RunnerTest
 
 

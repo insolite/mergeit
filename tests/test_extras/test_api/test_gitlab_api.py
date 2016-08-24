@@ -2,8 +2,8 @@ from unittest.mock import MagicMock, patch
 from urllib.parse import urljoin
 
 from tests.common import RunnerTest, ResponseMock
-from extras.api.gitlab_api import GitlabApi
-import extras.api.gitlab_api
+from mergeit.extras.api.gitlab_api import GitlabApi
+import mergeit.extras.api.gitlab_api
 
 
 class MergeRequestGitlabHookTest(RunnerTest):
@@ -30,7 +30,7 @@ class MergeRequestGitlabHookTest(RunnerTest):
         author_name = 'foo'
         commits = [{'author': {'name': author_name}}]
 
-        with patch.object(extras.api.gitlab_api, 'requests') as requests_mock:
+        with patch.object(mergeit.extras.api.gitlab_api, 'requests') as requests_mock:
             requests_mock.get = MagicMock(return_value=ResponseMock([{'id': 12, 'username': 'bar'},
                                                                      {'id': expected_last_commit_user_id, 'username': author_name}]))
             last_commit_user_id = self.gitlab_api.get_last_commit_user_id(commits)
@@ -45,7 +45,7 @@ class MergeRequestGitlabHookTest(RunnerTest):
         author_name = 'foo'
         commits = [{'author': {'name': author_name}}]
 
-        with patch.object(extras.api.gitlab_api, 'requests') as requests_mock:
+        with patch.object(mergeit.extras.api.gitlab_api, 'requests') as requests_mock:
             requests_mock.get = MagicMock(return_value=ResponseMock([{'id': 12, 'username': 'bar'}]))
             last_commit_user_id = self.gitlab_api.get_last_commit_user_id(commits)
 
@@ -61,7 +61,7 @@ class MergeRequestGitlabHookTest(RunnerTest):
         self.gitlab_api.get_url = MagicMock(return_value=url)
         last_commit_user_id = MagicMock()
 
-        with patch.object(extras.api.gitlab_api, 'requests') as requests_mock:
+        with patch.object(mergeit.extras.api.gitlab_api, 'requests') as requests_mock:
             requests_mock.get = MagicMock()
             requests_mock.post = MagicMock()
             self.gitlab_api.create_merge_request(source_branch, target_branch, title, last_commit_user_id)

@@ -1,5 +1,5 @@
-from core.runner import Hook
-from extras.api.gitlab_api import GitlabApi
+from mergeit.core.runner import Hook
+from mergeit.extras.api.gitlab_api import GitlabApi
 
 
 class ConflictMergeRequestGitlabHook(Hook):
