@@ -1,4 +1,7 @@
 merge_workspace: '/tmp/merge-workspace'
+variables:
+  production_version: '3\.0'
+  develop_version: '4\.0'
 filters_def:
   merge_cmd:
     module: extras.filters.MergeCmdFilter
@@ -27,9 +30,6 @@ hooks_def:
     token: '1234'
     project_id: 1
     title: 'Auto merge conflict {source} into {target}'
-variables:
-  production_version: '3\\.0'
-  develop_version: '4\\.0'
 hooks:
   - gitlab_merge_request
 dependencies:

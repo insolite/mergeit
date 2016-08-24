@@ -5,9 +5,9 @@ from importlib import import_module
 
 from git import Repo
 from git.exc import GitCommandError
+from context_logging import getLogger
 
 from core.exceptions import MergeCancel
-from logging_extras import ContextAdapter
 from core.runner import Filter, Hook
 
 
@@ -29,9 +29,8 @@ class PushHandler():
         self.branch = branch
         self.uri = uri
         self.commits = commits # TODO: generic format, not gitlab hook
-        self.logger = ContextAdapter(logging.getLogger(__name__),
-                                     dict(repo=self.name,
-                                          source=self.branch))
+        self.logger = getLogger(__name__, repo=self.name,
+                                          source=self.branch)
         self.repo = self.get_repo()
         self.filters = {}
         self.hooks = {}

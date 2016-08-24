@@ -2,7 +2,7 @@ import json
 import unittest
 from unittest.mock import MagicMock
 
-from logging_extras import init_logging
+from gitlab_hook_server import init_logging
 
 
 class ResponseMock(MagicMock):

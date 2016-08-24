@@ -62,7 +62,7 @@ target/
 .ipynb_checkpoints
 
 # PyCharm project files
-**/.idea/
+/.idea/
 
 # logs dir
 **/logs/

@@ -1,14 +1,64 @@
+import sys
 import json
 import asyncio
 import argparse
 import logging.config
 
 from aiohttp import web
+from context_logging import uncaught_exception, getLogger
 
 from core.push_handler import PushHandler
 from core.config.config import Config
 from core.config.yaml_config_source import YamlFileConfigSource
-from logging_extras import init_logging
+
+
+LOGGING_FORMAT = '%(asctime)s %(levelname)-7s %(message)-20s %(context)s'
+
+
+def init_logging(filename='logs/gitlab_hook_server.log'):
+    logging.config.dictConfig({
+        'version': 1,
+        'disable_existing_loggers': False,
+
+        'formatters': {
+            'standard': {
+                'format': LOGGING_FORMAT,
+            },
+            'colored': {
+                '()': 'context_logging.ColoredFormatter',
+                'format': LOGGING_FORMAT,
+            },
+        },
+        'handlers': {
+            'default': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'formatter': 'colored',
+            },
+            'console': {
+                'level': 'DEBUG',
+                'class': 'logging.StreamHandler',
+                'formatter': 'colored',
+            },
+            'file': {
+                'level': 'DEBUG',
+                'class': 'logging.handlers.WatchedFileHandler',
+                'filename': filename,
+                'formatter': 'standard',
+            },
+        },
+        'loggers': {
+            '': {
+                'handlers': ['console', 'file'],
+                'level': 'DEBUG',
+                'propagate': True,
+            },
+            'asyncio': {
+                'propagate': False,
+            },
+        }
+    })
+    sys.excepthook = uncaught_exception
 
 
 @asyncio.coroutine
@@ -31,7 +81,7 @@ def push(request, config):
 
 
 def run(host, port, project_config):
-    logger = logging.getLogger(__name__)
+    logger = getLogger(__name__)
     loop = asyncio.get_event_loop()
     app = web.Application()
     config = Config(YamlFileConfigSource(project_config))
