@@ -16,7 +16,7 @@ class GitlabHookServerTest(TestCase):
         # TODO: another way of mocking get_event_loop
         self.loop = asyncio.get_event_loop()
 
-    def test_push(self):
+    def test_gitlab_push(self):
         loop_mock = MagicMock()
         request_mock = MagicMock()
         config_mock = MagicMock()
@@ -34,7 +34,7 @@ class GitlabHookServerTest(TestCase):
         with patch.object(run_server.asyncio, 'get_event_loop', MagicMock(return_value=loop_mock)) as get_event_loop_mock,\
              patch.object(run_server, 'PushHandler') as PushHandlerMock:
                  response = self.loop.run_until_complete(
-                     run_server.push(request_mock, config_mock))
+                     run_server.gitlab_push(request_mock, config_mock))
 
         get_event_loop_mock.assert_called_once_with()
         self.assertIsInstance(response, web.Response)

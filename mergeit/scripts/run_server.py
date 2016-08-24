@@ -6,14 +6,21 @@ import argparse
 import logging.config
 
 from aiohttp import web
-from context_logging import uncaught_exception, getLogger
+from structlog import get_logger
+import structlog
 
+from mergeit.logging_extras import ProcessorFormatter, event_dict_to_message
 from mergeit.core.push_handler import PushHandler
 from mergeit.core.config.config import Config
 from mergeit.core.config.yaml_config_source import YamlFileConfigSource
 
 
-LOGGING_FORMAT = '%(asctime)s %(levelname)-7s %(message)-20s %(context)s'
+def uncaught_exception(exctype, value, tb):
+    logger = get_logger()
+    try:
+        raise value
+    except:
+        logger.critical('uncaught_exception', name=exctype.__name__, args=value.args, exc_info=True)
 
 
 def init_logging(log_dir):
@@ -22,14 +29,14 @@ def init_logging(log_dir):
     logging.config.dictConfig({
         'version': 1,
         'disable_existing_loggers': False,
-
         'formatters': {
-            'standard': {
-                'format': LOGGING_FORMAT,
+            'plain': {
+                '()': ProcessorFormatter,
+                'processor': structlog.dev.ConsoleRenderer(), # TODO: ConsoleRenderer without coloring
             },
             'colored': {
-                '()': 'context_logging.ColoredFormatter',
-                'format': LOGGING_FORMAT,
+                '()': ProcessorFormatter,
+                'processor': structlog.dev.ConsoleRenderer(),
             },
         },
         'handlers': {
@@ -38,21 +45,16 @@ def init_logging(log_dir):
                 'class': 'logging.StreamHandler',
                 'formatter': 'colored',
             },
-            'console': {
-                'level': 'DEBUG',
-                'class': 'logging.StreamHandler',
-                'formatter': 'colored',
-            },
             'file': {
                 'level': 'DEBUG',
                 'class': 'logging.handlers.WatchedFileHandler',
                 'filename': os.path.join(log_dir, 'server.log'),
-                'formatter': 'standard',
+                'formatter': 'plain',
             },
         },
         'loggers': {
             '': {
-                'handlers': ['console', 'file'],
+                'handlers': ['default', 'file'],
                 'level': 'DEBUG',
                 'propagate': True,
             },
@@ -61,11 +63,25 @@ def init_logging(log_dir):
             },
         }
     })
+    structlog.configure(
+        processors=[
+            structlog.stdlib.add_log_level,
+            structlog.stdlib.PositionalArgumentsFormatter(),
+            structlog.processors.TimeStamper(fmt='%Y-%m-%d %H:%M:%S'),
+            structlog.processors.StackInfoRenderer(),
+            structlog.processors.format_exc_info,
+            event_dict_to_message,
+        ],
+        context_class=dict,
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        wrapper_class=structlog.stdlib.BoundLogger,
+        cache_logger_on_first_use=True,
+    )
     sys.excepthook = uncaught_exception
 
 
 @asyncio.coroutine
-def push(request, config):
+def gitlab_push(request, config):
     data = json.loads((yield from request.content.read()).decode())
     project_name = data['repository']['name']
     branch = data['ref'].split('refs/heads/')[1]
@@ -84,11 +100,11 @@ def push(request, config):
 
 
 def run(host, port, project_config):
-    logger = getLogger(__name__)
+    logger = get_logger()
     loop = asyncio.get_event_loop()
     app = web.Application()
     config = Config(YamlFileConfigSource(project_config))
-    app.router.add_route('POST', '/push', lambda request: push(request, config))
+    app.router.add_route('POST', '/push', lambda request: gitlab_push(request, config))
     logger.info('application_start')
     loop.run_until_complete(loop.create_server(app.make_handler(), host, port))
     try:
@@ -98,7 +114,7 @@ def run(host, port, project_config):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='gitlab hook server')
+    parser = argparse.ArgumentParser(description='mergeit hook server')
     parser.add_argument('-H', '--host', type=str, default='*', help='Listen host')
     parser.add_argument('-p', '--port', type=str, default='1234', help='Listen port')
     parser.add_argument('-c', '--config', type=str, help='Config file')

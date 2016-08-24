@@ -2,7 +2,7 @@ import os
 import re
 from importlib import import_module
 
-from context_logging import getLogger
+from structlog import get_logger
 from git import Repo
 from git.exc import GitCommandError
 
@@ -21,8 +21,8 @@ class PushHandler():
         self.branch = branch
         self.uri = uri
         self.commits = commits # TODO: generic format, not gitlab hook
-        self.logger = getLogger(__name__, repo=self.name,
-                                          source=self.branch)
+        self.logger = get_logger(repo=self.name,
+                                 source=self.branch)
         self.repo = self.get_repo()
         self.filters = {}
         self.hooks = {}

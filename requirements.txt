@@ -3,5 +3,4 @@ requests
 gitpython
 aiohttp
 asynctest
-
-# context_logging # https://github.com/insolite/context-logging.git
+structlog[dev]
