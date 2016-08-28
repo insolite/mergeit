@@ -1,3 +1,5 @@
+name: 'test'
+uri: 'https://github.com/insolite/context-logging.git'
 merge_workspace: '/tmp/merge-workspace'
 variables:
   production_version: '3\.0'

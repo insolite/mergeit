@@ -7,7 +7,7 @@ requirements = [str(ir.req) for ir in install_reqs]
 
 setup(
     name='mergeit',
-    version='0.1.0',
+    version='0.2.0',
     packages=['mergeit'],
     url='https://github.com/insolite/mergeit',
     author='Oleg Krasnikov',
@@ -18,6 +18,7 @@ setup(
     entry_points={
         'console_scripts': [
             'mergeit = mergeit.scripts.run_server:main',
+            'mergeit-shell = mergeit.scripts.shell:main',
         ],
     },
 )

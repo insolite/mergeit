@@ -18,9 +18,10 @@ class GitlabApi:
         response = requests.get(self.get_url('/api/v3/projects/{}/users'.format(self.project_id)),
                                 headers={'PRIVATE-TOKEN': self.token})
         last_commit_user_id = None
-        for user in json.loads(response.text):
-            if user['username'] == commits[0]['author']['name']:
-                last_commit_user_id = user['id']
+        if commits:
+            for user in json.loads(response.text):
+                if user['username'] == commits[0]['author']['name']:
+                    last_commit_user_id = user['id']
         return last_commit_user_id
 
     def create_merge_request(self, source, target, title, last_commit_user_id=None):

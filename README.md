@@ -18,16 +18,30 @@ Run tests (optionally):
 python3 -m unittest discover tests
 ```
 
+## Run
+
 Run hook handle server:
 
 ```bash
-mergeit -H 0.0.0.0 -p 1234 -c config_samples/full.yaml -l test.log
+mergeit -H 0.0.0.0 -p 1234 -sh 0.0.0.0 -sp 1235 -c config_samples/full.yaml -l test.log
 ```
 
-To display help run:
+Display help:
 
 ```bash
-python3 gitlab_hook_server.py -h
+mergeit -h
+```
+
+Run shell (for manual commands):
+
+```bash
+mergeit-shell -c config_samples/full.yaml -l test.log
+```
+
+Connect to server's same shell via telnet (while mergeit server running):
+
+```bash
+telnet localhost 1235
 ```
 
 ## Features

@@ -4,7 +4,7 @@ from mergeit.extras.filters import RedmineFilter
 class ResolveRedmineFilter(RedmineFilter):
 
     def run(self, source_match, source_branch, target_branch):
-        if '@resolve' in self.push_handler.commits[0]['message']:
+        if self.push_handler.commits and '@resolve' in self.push_handler.commits[0]['message']:
             statuses = self.get_statuses()
             resolved_status = None
             for status in statuses:

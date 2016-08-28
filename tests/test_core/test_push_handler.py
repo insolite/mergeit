@@ -35,8 +35,9 @@ class PushHandlerTest(MergeitTest):
                                "email": "test@localhost"}}]
         self.config_source_mock = MagicMock()
         self.config_controller = Config(self.config_source_mock)
-        self.configure({})
-        self.push_handler = PushHandler(self.config_controller, REPO_NAME, 'master', 'git@localhost:test/{}.git'.format(REPO_NAME), commits)
+        self.configure({'name': REPO_NAME,
+                        'uri': 'git@localhost:test/{}.git'.format(REPO_NAME)})
+        self.push_handler = PushHandler(self.config_controller, 'master', commits)
 
     def tearDown(self):
         super().tearDown()
@@ -79,7 +80,7 @@ class PushHandlerTest(MergeitTest):
             RepoMock.clone_from = MagicMock(return_value=expected_repo)
             repo = self.push_handler.get_repo()
 
-        RepoMock.clone_from.assert_called_once_with(self.push_handler.uri, path)
+        RepoMock.clone_from.assert_called_once_with(self.config_controller.data['uri'], path)
         self.push_handler.get_path.assert_called_once_with()
         self.assertEqual(repo, expected_repo)
 

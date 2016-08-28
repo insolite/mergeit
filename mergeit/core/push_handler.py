@@ -15,13 +15,11 @@ DEFAULT_REMOTE = 'origin'
 
 class PushHandler():
 
-    def __init__(self, config, name, branch, uri, commits):
+    def __init__(self, config, branch, commits):
         self.config = config
-        self.name = name
         self.branch = branch
-        self.uri = uri
         self.commits = commits # TODO: generic format, not gitlab hook
-        self.logger = get_logger(repo=self.name,
+        self.logger = get_logger(repo=self.get_name(),
                                  source=self.branch)
         self.repo = self.get_repo()
         self.filters = {}
@@ -34,7 +32,7 @@ class PushHandler():
             self.logger.info('found_repo')
             return Repo(path)
         self.logger.info('cloning_repo')
-        return Repo.clone_from(self.uri, path)
+        return Repo.clone_from(self.config.get('uri'), path)
 
     def init_runners(self):
         """Import all configured filter modules"""
@@ -133,12 +131,16 @@ class PushHandler():
                                             global_filters + target_rule.get('filters', []),
                                             global_hooks + target_rule.get('hooks', []))
 
+    def get_name(self):
+        return self.config.get('name')
+
     def get_path(self):
         """Returns git repo merge workspace path"""
-        return os.path.join(self.config['merge_workspace'], self.name)
+        return os.path.join(self.config['merge_workspace'], self.get_name())
 
-    def get_branches(self, remote=False):
-        self.repo.remote().fetch()
-        branches = [re.match(r'[\s\*]+{}(.+)'.format(r'origin\/' if remote else ''), branch).group(1)
+    def get_branches(self, remote=False, fetch=True):
+        if fetch:
+            self.repo.remote().fetch()
+        branches = [re.match(r'.*[\s\*]+{}(.+)'.format(r'origin\/' if remote else ''), branch).group(1)
                     for branch in self.repo.git.branch(*(['-r'] if remote else [])).split('\n')]
         return branches

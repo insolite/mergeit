@@ -25,4 +25,4 @@ class MergeitTest(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        init_logging('/tmp/mergeit_test_{}.log'.format(int(time())))
+        init_logging('/tmp/mergeit_test_logs_{}'.format(int(time())))
