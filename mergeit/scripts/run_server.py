@@ -12,6 +12,7 @@ from telnetlib3.telsh import TelnetShellStream
 from mergeit.core.config.config import Config
 from mergeit.core.config.yaml_config_source import YamlFileConfigSource
 from mergeit.core.push_handler import PushHandler
+from mergeit.core.repo_manager import RepoManager
 from mergeit.core.shell import MergeitShell
 from mergeit.overrides.cmd_telsh import CmdTelsh
 from mergeit.scripts.common import init_logging
@@ -22,9 +23,13 @@ def gitlab_push(request, config):
     data = json.loads((yield from request.content.read()).decode())
     branch = data['ref'].split('refs/heads/')[1]
     config.reload()
+    repo_manager = RepoManager(config['name'],
+                               config['uri'],
+                               config['merge_workspace'])
     handler = PushHandler(config,
                           branch,
-                          data['commits'])
+                          data['commits'],
+                          repo_manager)
     # re.match(r'(.+?:\/\/.+?)\/', data['repository']['homepage']).group(1),
     loop = asyncio.get_event_loop()
     # Close connection first, then handle
@@ -38,6 +43,7 @@ def run(host, port, shell_host, shell_port, project_config,
         config_factory=Config,
         config_source_factory=YamlFileConfigSource,
         push_handler_factory=PushHandler,
+        repo_manager_factory=RepoManager,
         cmd_factory=MergeitShell,
         telnet_shell_factory=CmdTelsh,
         telnet_server_factory=TelnetServer):
@@ -48,7 +54,10 @@ def run(host, port, shell_host, shell_port, project_config,
     app.router.add_route('POST', '/push', lambda request: gitlab_push(request, config))
     logger.info('application_start')
     loop.run_until_complete(loop.create_server(app.make_handler(), host, port))
-    shell = cmd_factory(config=config, push_handler_factory=push_handler_factory, forward=True)
+    shell = cmd_factory(config=config,
+                        push_handler_factory=push_handler_factory,
+                        repo_manager_factory=repo_manager_factory,
+                        forward=True)
     shell_factory = (lambda server, stream=TelnetShellStream, log=logging:
                      telnet_shell_factory(server, stream, log, cmd=shell))
     loop.run_until_complete(

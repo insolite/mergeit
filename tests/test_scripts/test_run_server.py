@@ -26,13 +26,12 @@ class GitlabHookServerTest(TestCase):
         commits = [{}]
         # TODO: add real request data
         request_mock.content.read = CoroutineMock(return_value=json.dumps(
-            {'repository': {'name': project_name,
-                            'git_ssh_url': git_ssh_url},
-             'ref': 'refs/heads/{}'.format(branch),
+            {'ref': 'refs/heads/{}'.format(branch),
              'commits': commits}).encode())
 
         with patch.object(run_server.asyncio, 'get_event_loop', MagicMock(return_value=loop_mock)) as get_event_loop_mock,\
-             patch.object(run_server, 'PushHandler') as PushHandlerMock:
+             patch.object(run_server, 'PushHandler') as PushHandlerMock, \
+             patch.object(run_server, 'RepoManager') as RepoManagerMock:
                  response = self.loop.run_until_complete(
                      run_server.gitlab_push(request_mock, config_mock))
 
@@ -40,9 +39,13 @@ class GitlabHookServerTest(TestCase):
         self.assertIsInstance(response, web.Response)
         self.assertEqual(response.status, 200)
         config_mock.reload.assert_called_once_with()
+        RepoManagerMock.assert_called_once_with(config_mock['name'],
+                                                config_mock['uri'],
+                                                config_mock['merge_workspace'])
         PushHandlerMock.assert_called_once_with(config_mock,
                                                 branch,
-                                                commits)
+                                                commits,
+                                                RepoManagerMock())
         loop_mock.call_soon.assert_called_once_with(PushHandlerMock().handle)
 
     def test_run(self):
@@ -56,6 +59,7 @@ class GitlabHookServerTest(TestCase):
         app_factory = MagicMock(return_value=app)
         shell = MagicMock()
         push_handler_factory = MagicMock()
+        repo_manager_factory = MagicMock()
         cmd_factory = MagicMock(return_value=shell)
         telnet_shell_factory = MagicMock()
         telnet_server_factory = MagicMock()
@@ -76,6 +80,7 @@ class GitlabHookServerTest(TestCase):
                            config_factory=config_factory,
                            config_source_factory=config_source_factory,
                            push_handler_factory=push_handler_factory,
+                           repo_manager_factory=repo_manager_factory,
                            cmd_factory=cmd_factory,
                            telnet_shell_factory=telnet_shell_factory,
                            telnet_server_factory=telnet_server_factory)
@@ -86,7 +91,10 @@ class GitlabHookServerTest(TestCase):
         config_factory.assert_called_once_with(config_source)
         app.router.add_route.assert_called_once_with('POST', '/push', ANY) # TODO: mock lambda
         app.make_handler.assert_called_once_with()
-        cmd_factory.assert_called_once_with(config=config, push_handler_factory=push_handler_factory, forward=True)
+        cmd_factory.assert_called_once_with(config=config,
+                                            push_handler_factory=push_handler_factory,
+                                            repo_manager_factory=repo_manager_factory,
+                                            forward=True)
         loop.create_server.assert_has_calls([call(app_handler, host, port),
                                              call(ANY, shell_host, shell_port)], # TODO: ANY - server
                                             any_order=True)
@@ -106,6 +114,7 @@ class GitlabHookServerTest(TestCase):
         app_factory = MagicMock(return_value=app)
         shell = MagicMock()
         push_handler_factory = MagicMock()
+        repo_manager_factory = MagicMock()
         cmd_factory = MagicMock(return_value=shell)
         telnet_shell_factory = MagicMock()
         telnet_server_factory = MagicMock()
@@ -126,6 +135,7 @@ class GitlabHookServerTest(TestCase):
                            config_factory=config_factory,
                            config_source_factory=config_source_factory,
                            push_handler_factory=push_handler_factory,
+                           repo_manager_factory=repo_manager_factory,
                            cmd_factory=cmd_factory,
                            telnet_shell_factory=telnet_shell_factory,
                            telnet_server_factory=telnet_server_factory)
@@ -136,7 +146,10 @@ class GitlabHookServerTest(TestCase):
         config_factory.assert_called_once_with(config_source)
         app.router.add_route.assert_called_once_with('POST', '/push', ANY) # TODO: mock lambda
         app.make_handler.assert_called_once_with()
-        cmd_factory.assert_called_once_with(config=config, push_handler_factory=push_handler_factory, forward=True)
+        cmd_factory.assert_called_once_with(config=config,
+                                            push_handler_factory=push_handler_factory,
+                                            repo_manager_factory=repo_manager_factory,
+                                            forward=True)
         loop.create_server.assert_has_calls([call(app_handler, host, port),
                                              call(ANY, shell_host, shell_port)], # TODO: ANY - server
                                             any_order=True)

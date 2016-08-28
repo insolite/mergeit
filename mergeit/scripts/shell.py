@@ -1,6 +1,7 @@
 import argparse
 
 from mergeit.core.push_handler import PushHandler
+from mergeit.core.repo_manager import RepoManager
 from mergeit.core.shell import MergeitShell
 from mergeit.core.config.config import Config
 from mergeit.core.config.yaml_config_source import YamlFileConfigSource
@@ -9,7 +10,7 @@ from mergeit.scripts.common import init_logging
 
 def run(project_config):
     config = Config(YamlFileConfigSource(project_config))
-    shell = MergeitShell(config=config, push_handler_factory=PushHandler, forward=False)
+    shell = MergeitShell(config=config, push_handler_factory=PushHandler, repo_manager_factory=RepoManager, forward=False)
     try:
         shell.cmdloop()
     except KeyboardInterrupt:

@@ -1,38 +1,26 @@
-import os
 import re
 from importlib import import_module
 
 from structlog import get_logger
-from git import Repo
-from git.exc import GitCommandError
 
 from .safe_dict import SafeDict
 from .exceptions import MergeCancel
 
-APPLICATION_NAME = 'mergeit'
+
 DEFAULT_REMOTE = 'origin'
 
 
 class PushHandler():
 
-    def __init__(self, config, branch, commits):
+    def __init__(self, config, branch, commits, repo_manager):
         self.config = config
         self.branch = branch
         self.commits = commits # TODO: generic format, not gitlab hook
-        self.logger = get_logger(repo=self.get_name(),
-                                 source=self.branch)
-        self.repo = self.get_repo()
+        self.repo_manager = repo_manager
+        self.logger = get_logger(source=self.branch)
         self.filters = {}
         self.hooks = {}
         self.init_runners()
-
-    def get_repo(self):
-        path = self.get_path()
-        if os.path.exists(path):
-            self.logger.info('found_repo')
-            return Repo(path)
-        self.logger.info('cloning_repo')
-        return Repo.clone_from(self.config.get('uri'), path)
 
     def init_runners(self):
         """Import all configured filter modules"""
@@ -45,43 +33,6 @@ class PushHandler():
                 module = import_module(module_name)
                 runner_class = getattr(module, class_name)
                 dst[name] = runner_class(self, **runner_kwargs)
-
-    def fresh_checkout(self, target_branch):
-        """Do a full reset of the working dir and checkout fresh branch from remote"""
-        self.logger.debug('fetch')
-        self.repo.remote().fetch()
-        self.logger.debug('reset')
-        self.repo.git.reset('--hard')
-        self.logger.debug('clean')
-        self.repo.git.clean('-df')
-        try:
-            self.logger.debug('checkout', branch=target_branch)
-            self.repo.git.checkout(target_branch)
-        except GitCommandError:
-            self.logger.debug('checkout_failed')
-            self.logger.debug('checkout', branch=self.branch)
-            self.repo.git.checkout(self.branch)
-            self.logger.debug('checkout_b', branch=target_branch)
-            self.repo.git.checkout('-b', target_branch)
-        else:
-            target = '{}/{}'.format(self.repo.remote().name, target_branch)
-            self.logger.debug('reset', branch=target)
-            # self.repo.remote().pull(target_branch)
-            self.repo.git.reset('--hard', target)
-
-    def merge(self, target_branch):
-        """Merge self.branch into target_branch"""
-        self.logger.info('merge_start', target=target_branch)
-        self.logger.info('checkout', branch=target_branch)
-        self.fresh_checkout(target_branch)
-        try:
-            self.repo.git.merge('{}/{}'.format(self.repo.remote(), self.branch))
-        except GitCommandError:
-            conflict = True
-        else:
-            conflict = False
-        self.logger.info('merge_end', target=target_branch, conflict=conflict)
-        return conflict
 
     def process_merge_pair(self, source_match, target_branch, filters, hooks):
         """Execute pre-filters, merge source branch into target branch and execute post-filters"""
@@ -96,7 +47,7 @@ class PushHandler():
                     break
             self.logger.info('filters_end', target=target_branch)
             if target_branch:
-                conflict = self.merge(target_branch)
+                conflict = self.repo_manager.merge(self.branch, target_branch)
             else:
                 raise MergeCancel
             self.logger.info('hooks_start')
@@ -108,7 +59,7 @@ class PushHandler():
             self.logger.info('merge_cancel', target=target_branch)
         else:
             self.logger.info('push', branch=target_branch)
-            self.repo.remote().push(target_branch)
+            self.repo_manager.push(target_branch)
 
     def handle(self):
         """Handle push event. Parse source branch for all patterns
@@ -130,17 +81,3 @@ class PushHandler():
                                             target_branch,
                                             global_filters + target_rule.get('filters', []),
                                             global_hooks + target_rule.get('hooks', []))
-
-    def get_name(self):
-        return self.config.get('name')
-
-    def get_path(self):
-        """Returns git repo merge workspace path"""
-        return os.path.join(self.config['merge_workspace'], self.get_name())
-
-    def get_branches(self, remote=False, fetch=True):
-        if fetch:
-            self.repo.remote().fetch()
-        branches = [re.match(r'.*[\s\*]+{}(.+)'.format(r'origin\/' if remote else ''), branch).group(1)
-                    for branch in self.repo.git.branch(*(['-r'] if remote else [])).split('\n')]
-        return branches

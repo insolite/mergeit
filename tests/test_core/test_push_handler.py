@@ -5,7 +5,6 @@ from importlib import import_module
 
 from git import Repo
 
-from mergeit.core import push_handler
 from mergeit.core.push_handler import PushHandler, DEFAULT_REMOTE
 from mergeit.core.config.config import Config
 from tests.common import MergeitTest
@@ -20,13 +19,7 @@ class PushHandlerTest(MergeitTest):
     def setUp(self):
         super().setUp()
         self.clean_workspace()
-        self.repo = Repo.init(self.get_path())
-        self.remote_repo = Repo.init(self.get_path() + '_remote', bare=True)
-        self.repo.create_remote(DEFAULT_REMOTE, self.remote_repo.working_dir)
-        self.commit_new_file('test.txt', 'test data')
-        self.repo.git.checkout('-b', 'develop')
-        self.repo.remote().push(self.repo.active_branch.name)
-        self.repo.git.checkout('master')
+        os.mkdir(WORKSPACE)
         commits = [{"id": "ffffff",
                     "message": "Test commit message\\n",
                     "timestamp": "2016-01-01T00:00:00+00:00",
@@ -37,7 +30,8 @@ class PushHandlerTest(MergeitTest):
         self.config_controller = Config(self.config_source_mock)
         self.configure({'name': REPO_NAME,
                         'uri': 'git@localhost:test/{}.git'.format(REPO_NAME)})
-        self.push_handler = PushHandler(self.config_controller, 'master', commits)
+        self.repo_manager = MagicMock()
+        self.push_handler = PushHandler(self.config_controller, 'master', commits, self.repo_manager)
 
     def tearDown(self):
         super().tearDown()
@@ -47,42 +41,8 @@ class PushHandlerTest(MergeitTest):
         if os.path.exists(WORKSPACE):
             shutil.rmtree(WORKSPACE)
 
-    def commit_new_file(self, name, data):
-        with open(os.path.join(self.get_path(), name), 'w') as f:
-            f.write(data)
-        self.repo.git.add(name)
-        self.repo.git.commit('-m', '"Test commit message"')
-        self.repo.remote().push(self.repo.active_branch.name)
-
-    def get_path(self):
-        return os.path.join(WORKSPACE, REPO_NAME)
-
     def configure(self, data):
-        self.config_controller.data = dict(merge_workspace=WORKSPACE, **data)
-
-    def test_get_repo__existing(self):
-        path = self.get_path()
-        self.push_handler.get_path = MagicMock(return_value=path)
-
-        with patch.object(push_handler, 'Repo') as RepoMock:
-            repo = self.push_handler.get_repo()
-
-        RepoMock.assert_called_once_with(path)
-        self.push_handler.get_path.assert_called_once_with()
-        self.assertEqual(repo, RepoMock(path))
-
-    def test_get_repo__clone(self):
-        expected_repo = MagicMock()
-        path = 'not-existing'
-        self.push_handler.get_path = MagicMock(return_value=path)
-
-        with patch.object(push_handler, 'Repo') as RepoMock:
-            RepoMock.clone_from = MagicMock(return_value=expected_repo)
-            repo = self.push_handler.get_repo()
-
-        RepoMock.clone_from.assert_called_once_with(self.config_controller.data['uri'], path)
-        self.push_handler.get_path.assert_called_once_with()
-        self.assertEqual(repo, expected_repo)
+        self.config_controller.data = dict(**data)
 
     def test_init_runners(self):
         with open(os.path.join(WORKSPACE, '__init__.py'), 'w') as f:
@@ -126,56 +86,6 @@ class PushHandlerTest(MergeitTest):
         self.assertEqual(filter_.config, filter_extra)
         self.assertEqual(hook.config, hook_extra)
 
-    def test_fresh_checkout__success(self):
-        # self.configure({})
-
-        self.push_handler.fresh_checkout('develop')
-
-        self.assertEqual(self.repo.active_branch.name, 'develop')
-
-    def test_fresh_checkout__git_error(self):
-        # self.configure({})
-        branch = 'not-existing'
-        base_commit = self.repo.active_branch.commit
-
-        self.push_handler.fresh_checkout(branch)
-
-        self.assertEqual(self.repo.active_branch.name, branch)
-        self.assertEqual(self.repo.active_branch.commit, base_commit)
-
-    def test_merge__no_conflict(self):
-        # self.configure({})
-        filename = 'test2.txt'
-        source_branch = 'master'
-        target_branch = 'develop'
-        self.repo.git.checkout(source_branch)
-        self.commit_new_file(filename, 'test data')
-
-        conflict = self.push_handler.merge(target_branch)
-
-        # self.repo.remote().fetch()
-        # self.repo.git.checkout(target_branch)
-        # self.repo.git.reset('--hard', '{}/{}'.format(self.repo.remote().name, target_branch))
-        # self.repo.git.clean('-df')
-        self.assertTrue(os.path.exists(os.path.join(self.get_path(), filename)))
-        self.assertFalse(conflict)
-
-    def test_merge__conflict(self):
-        # self.configure({})
-        filename = 'test2.txt'
-        source_branch = 'master'
-        target_branch = 'develop'
-        self.repo.git.checkout(source_branch)
-        self.commit_new_file(filename, 'test data')
-        self.repo.git.checkout(target_branch)
-        self.commit_new_file(filename, 'test data 2')
-        self.repo.git.checkout(source_branch)
-        self.commit_new_file(filename, 'test data 1')
-
-        conflict = self.push_handler.merge(target_branch)
-
-        self.assertTrue(conflict)
-
     @patch('mergeit.core.push_handler.import_module')
     def test_process_merge_pair__merge(self, import_mock):
         # self.configure({})
@@ -194,11 +104,11 @@ class PushHandlerTest(MergeitTest):
         import_mock(test_filter_module).return_value = test_filter_class
         import_mock(test_hook_module).return_value = test_hook_class
         conflict = MagicMock()
-        self.push_handler.merge = MagicMock(return_value=conflict)
+        self.repo_manager.merge = MagicMock(return_value=conflict)
 
         self.push_handler.process_merge_pair(source_branch, target_branch, [test_filter_module], [test_hook_module])
 
-        self.push_handler.merge.assert_called_once_with(target_branch)
+        self.repo_manager.merge.assert_called_once_with(source_branch, target_branch)
         test_filter.run.assert_called_once_with(ANY, source_branch, target_branch) # TODO: ANY - regexp match
         test_hook.run.assert_called_once_with(source_branch, target_branch, conflict)
 
@@ -219,11 +129,11 @@ class PushHandlerTest(MergeitTest):
         self.push_handler.hooks = {test_hook_module: test_hook}
         import_mock(test_filter_module).return_value = test_filter_class
         import_mock(test_hook_module).return_value = test_hook_class
-        self.push_handler.merge = MagicMock()
+        self.repo_manager.merge = MagicMock()
 
         self.push_handler.process_merge_pair(source_branch, target_branch, [test_filter_module], [test_hook_module])
 
-        self.push_handler.merge.assert_not_called()
+        self.repo_manager.merge.assert_not_called()
         test_filter.run.assert_called_once_with(ANY, source_branch, target_branch) # TODO: ANY - regexp match
         test_hook.run.assert_not_called()
 
@@ -251,19 +161,3 @@ class PushHandlerTest(MergeitTest):
         self.push_handler.handle()
 
         self.push_handler.process_merge_pair.assert_called_once_with(ANY, target_branch.format(target_version=target_version), [], []) # FIXME: pass filters and hooks
-
-    # @patch('push_handler.PushHandler.merge_pair')
-    def test_get_branches__local(self):
-        #
-
-        branches = self.push_handler.get_branches(remote=False)
-
-        self.assertSetEqual(set(branches), {'master', 'develop'})
-
-    # @patch('push_handler.PushHandler.merge_pair')
-    def test_get_branches__remote(self):
-        #
-
-        branches = self.push_handler.get_branches(remote=True)
-
-        self.assertSetEqual(set(branches), {'master', 'develop'})

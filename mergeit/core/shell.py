@@ -35,12 +35,16 @@ class MergeitShell(BaseShell):
     file = None
 
     def __init__(self, completekey='tab', stdin=None, stdout=None,
-                 config=None, push_handler_factory=None, forward=False):
+                 config=None, push_handler_factory=None, repo_manager_factory=None, forward=False):
         super().__init__(completekey, stdin, stdout)
         self.config = config
         self.push_handler_factory = push_handler_factory
+        self.repo_manager_factory = repo_manager_factory
         self.forward = forward
-        self._push_handler = self.push_handler_factory(self.config, 'foo', [])
+        self.repo_manager = self.repo_manager_factory(config['name'],
+                                                      config['uri'],
+                                                      config['merge_workspace'])
+        self.repo_manager.fetch()
 
     def get_logger_handler(self):
         logger_handler = logging.StreamHandler(self.stdout)
@@ -55,21 +59,17 @@ class MergeitShell(BaseShell):
         return super().precmd(line)
 
     @multiarg
-    def do_reload(self):
-        self._push_handler = self.push_handler_factory(self.config, 'foo', [])
-
-    @multiarg
     def do_fetch(self):
-        self._push_handler.repo.remote().fetch()
+        self.repo_manager.fetch()
 
     def _complete_branches(self, text):
-        branches = self._push_handler.get_branches(True, fetch=False)
+        branches = self.repo_manager.get_branches(True, fetch=False)
         return [branch for branch in branches if branch.startswith(text)]
 
     @multiarg
     def do_merge(self, source, target):
         """Merge source branch into target"""
-        self.stdout.write('merge {} -> {}'.format(source, target))
+        self.stdout.write('merge {} -> {}\n'.format(source, target))
         raise NotImplementedError
 
     def complete_merge(self, text, line, begidx, endidx):
@@ -78,7 +78,7 @@ class MergeitShell(BaseShell):
     @multiarg
     def do_push(self, branch):
         """Simultate push event to specified branch"""
-        push_handler = self.push_handler_factory(self.config, branch, [])
+        push_handler = self.push_handler_factory(self.config, branch, [], self.repo_manager)
         if self.forward:
             push_handler.logger.addHandler(self.get_logger_handler())
         push_handler.handle()
