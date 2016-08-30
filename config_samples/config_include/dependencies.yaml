@@ -1,0 +1,29 @@
+# Merge task branches into appropriate version branches
+'^(?P<task_id>\\d+)\\-.+$':
+  filters:
+    - redmine_resolve
+    - merge_cmd
+    - redmine_version
+  targets:
+    - v{redmine_version}
+# Merge version updates into next versions one-by-one
+# 'v(?P<major>\\d+)\.(?P<minor>\\d+)':
+'^v\\d+\\.\\d+$':
+  filters:
+    - next_version
+  targets:
+    - v{next_version}
+# Create merge request into master on stage update
+'^stage$':
+  filters:
+    - merge_approval
+  targets:
+    - master
+# Update stage branch with current version updates
+'^v{production_version}$':
+  targets:
+    - stage
+# Update develop branch with current development version updates
+'^v{develop_version}$':
+  targets:
+    - develop

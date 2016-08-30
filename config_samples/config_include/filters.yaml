@@ -1,0 +1,20 @@
+merge_cmd:
+  module: mergeit.extras.filters.MergeCmdFilter
+redmine_resolve:
+  module: mergeit.extras.filters.ResolveRedmineFilter
+  url: '{redmine_url}'
+  api_key: '{redmine_api_key}'
+redmine_version:
+  module: mergeit.extras.filters.VersionRedmineFilter
+  url: '{redmine_url}'
+  api_key: '{redmine_api_key}'
+tests:
+  module: mergeit.extras.filters.TestsFilter
+  path: 'tests'
+merge_approval:
+  module: mergeit.extras.filters.MergeRequestGitlabFilter
+  url: '{gitlab_url}'
+  token: '{gitlab_token}'
+  project_id: '{gitlab_project_id}'
+  title: 'Merge approval {source} into {target}'
+  user_id: '{gitlab_user_id}'

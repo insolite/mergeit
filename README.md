@@ -84,7 +84,6 @@ merGeIT comes with some helpful filters and hooks for Redmine and GitLab located
 
 ## TODO
 
-* Add config file inheritance
 * Add support for raw git push hooks (not only gitlab)
 * Add ability to configure git remotes somehow
 * Add more TODO items

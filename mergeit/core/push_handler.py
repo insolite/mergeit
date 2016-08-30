@@ -25,6 +25,7 @@ class PushHandler():
     def init_runners(self):
         """Import all configured filter modules"""
         self.logger.info('configuring_runners')
+        variables = self.config.get('variables', {})
         for config_key, dst in (('filters_def', self.filters), # TODO: refactor it
                                 ('hooks_def', self.hooks)):
             for name, runner_data in self.config.get(config_key, {}).items():
@@ -32,6 +33,8 @@ class PushHandler():
                 module_name, class_name = runner_kwargs.pop('module').rsplit('.', 1)
                 module = import_module(module_name)
                 runner_class = getattr(module, class_name)
+                runner_kwargs = {key: val.format(**variables) if isinstance(val, str) else val
+                                 for key, val in runner_kwargs.items()}
                 dst[name] = runner_class(self, **runner_kwargs)
 
     def process_merge_pair(self, source_match, target_branch, filters, hooks):

@@ -1,0 +1,6 @@
+gitlab_merge_request:
+  module: mergeit.extras.hooks.ConflictMergeRequestGitlabHook
+  url: '{gitlab_url}'
+  token: '{gitlab_token}'
+  project_id: '{gitlab_project_id}'
+  title: 'Auto merge conflict {source} into {target}'

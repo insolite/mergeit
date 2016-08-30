@@ -47,6 +47,7 @@ class PushHandlerTest(MergeitTest):
     def test_init_runners(self):
         with open(os.path.join(WORKSPACE, '__init__.py'), 'w') as f:
             f.write('')
+        variables = {'foo': 'world', 'bar': 'hell'}
         # Filter
         filter_module_name = 'test_filter'
         filter_class_name = 'TestFilter'
@@ -55,8 +56,10 @@ class PushHandlerTest(MergeitTest):
                     'class {}(Filter): pass'.format(filter_class_name))
 
         filter_data = {'module': '{}.{}.{}'.format(WORKSPACE, filter_module_name, filter_class_name)}
-        filter_extra = {'extra': 42}
+        filter_extra = {'extra': 42, 'extra_var': 'hello, {foo}'}
         filter_data.update(filter_extra)
+        filter_data_expected = filter_extra.copy()
+        filter_data_expected['extra_var'] = filter_data_expected['extra_var'].format(**variables)
         # Hook
         hook_module_name = 'test_hook'
         hook_class_name = 'TestHook'
@@ -64,10 +67,13 @@ class PushHandlerTest(MergeitTest):
             f.write('from mergeit.core.runner import Hook\n'
                     'class {}(Hook): pass'.format(hook_class_name))
         hook_data = {'module': '{}.{}.{}'.format(WORKSPACE, hook_module_name, hook_class_name)}
-        hook_extra = {'foo': 24}
+        hook_extra = {'foo': 24, 'extra_info': 'bye, {bar}'}
         hook_data.update(hook_extra)
+        hook_data_expected = hook_extra.copy()
+        hook_data_expected['extra_info'] = hook_data_expected['extra_info'].format(**variables)
         # Configure
-        self.configure({'filters_def': {filter_module_name: filter_data},
+        self.configure({'variables': variables,
+                        'filters_def': {filter_module_name: filter_data},
                         'hooks_def': {hook_module_name: hook_data}})
         # Import
         filter_module = import_module('{}.{}'.format(WORKSPACE, filter_module_name))
@@ -83,8 +89,8 @@ class PushHandlerTest(MergeitTest):
         self.assertIsInstance(hook, hook_class)
         self.assertEqual(filter_.push_handler, self.push_handler)
         self.assertEqual(hook.push_handler, self.push_handler)
-        self.assertEqual(filter_.config, filter_extra)
-        self.assertEqual(hook.config, hook_extra)
+        self.assertEqual(filter_.config, filter_data_expected)
+        self.assertEqual(hook.config, hook_data_expected)
 
     @patch('mergeit.core.push_handler.import_module')
     def test_process_merge_pair__merge(self, import_mock):

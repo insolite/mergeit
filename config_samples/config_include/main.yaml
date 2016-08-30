@@ -1,0 +1,18 @@
+name: 'mergeit'
+uri: 'https://github.com/insolite/mergeit.git'
+merge_workspace: '/tmp/merge-workspace'
+variables:
+  production_version: !include production_version.yaml
+  develop_version: !include develop_version.yaml
+  redmine_url: 'http://localhost'
+  redmine_api_key: '1234'
+  gitlab_url: 'http://localhost'
+  gitlab_token: '1234'
+  gitlab_project_id: 1
+  gitlab_user_id: 1
+#a: !include filters.yaml
+filters_def: !include filters.yaml
+hooks_def: !include hooks.yaml
+hooks:
+  - gitlab_merge_request
+dependencies: !include dependencies.yaml

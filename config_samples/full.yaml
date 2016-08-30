@@ -1,5 +1,5 @@
-name: 'test'
-uri: 'https://github.com/insolite/context-logging.git'
+name: 'mergeit'
+uri: 'https://github.com/insolite/mergeit.git'
 merge_workspace: '/tmp/merge-workspace'
 variables:
   production_version: '3\.0'
@@ -36,8 +36,6 @@ hooks:
   - gitlab_merge_request
 dependencies:
   # Merge task branches into appropriate version branches
-  # when resolved ('Resolve #\d+' cmd in commit message)
-  # and mark redmine task as 'Resolved'
   '^(?P<task_id>\\d+)\\-.+$':
     filters:
       - redmine_resolve
@@ -46,26 +44,23 @@ dependencies:
     targets:
       - v{redmine_version}
   # Merge version updates into next versions one-by-one
-#      'v(?P<major>\\d+)\.(?P<minor>\\d+)':
+  # 'v(?P<major>\\d+)\.(?P<minor>\\d+)':
   '^v\\d+\\.\\d+$':
     filters:
       - next_version
     targets:
       - v{next_version}
   # Update master branch with current stage
-  # To release new version just change source branch and make push to it
   '^stage$':
     filters:
       - merge_approval
     targets:
       - master
   # Update stage branch with current version updates
-  # To release new version just change source branch and make push to it
   '^v{production_version}$':
     targets:
       - stage
   # Update develop branch with current development version updates
-  # To release new version just change source branch and make push to it
   '^v{develop_version}$':
     targets:
       - develop
