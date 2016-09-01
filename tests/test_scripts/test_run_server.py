@@ -54,6 +54,7 @@ class GitlabHookServerTest(TestCase):
         shell_host = MagicMock()
         shell_port = MagicMock()
         config_file = MagicMock()
+        log = MagicMock()
         loop = MagicMock()
         app = MagicMock()
         app_factory = MagicMock(return_value=app)
@@ -74,8 +75,9 @@ class GitlabHookServerTest(TestCase):
         loop.create_server = MagicMock(side_effect=[server, telnet_server])
         loop.run_forever = MagicMock()
 
-        with patch.object(run_server.asyncio, 'get_event_loop', MagicMock(return_value=loop)) as get_event_loop_mock:
-            run_server.run(host, port, shell_host, shell_port, config_file,
+        with patch.object(run_server, 'init_logging') as init_logging_mock,\
+             patch.object(run_server.asyncio, 'get_event_loop', MagicMock(return_value=loop)) as get_event_loop_mock:
+            run_server.run(host, port, shell_host, shell_port, config_file, log,
                            application_factory=app_factory,
                            config_factory=config_factory,
                            config_source_factory=config_source_factory,
@@ -85,6 +87,7 @@ class GitlabHookServerTest(TestCase):
                            telnet_shell_factory=telnet_shell_factory,
                            telnet_server_factory=telnet_server_factory)
 
+        init_logging_mock.assert_called_once_with(log, config.get('name'))
         get_event_loop_mock.assert_called_once_with()
         app_factory.assert_called_once_with()
         config_source_factory.assert_called_once_with(config_file)
@@ -109,6 +112,7 @@ class GitlabHookServerTest(TestCase):
         shell_host = MagicMock()
         shell_port = MagicMock()
         config_file = MagicMock()
+        log = MagicMock()
         loop = MagicMock()
         app = MagicMock()
         app_factory = MagicMock(return_value=app)
@@ -129,8 +133,9 @@ class GitlabHookServerTest(TestCase):
         loop.create_server = MagicMock(side_effect=[server, telnet_server])
         loop.run_forever = MagicMock(side_effect=KeyboardInterrupt)
 
-        with patch.object(run_server.asyncio, 'get_event_loop', MagicMock(return_value=loop)) as get_event_loop_mock:
-            run_server.run(host, port, shell_host, shell_port, config_file,
+        with patch.object(run_server, 'init_logging') as init_logging_mock,\
+             patch.object(run_server.asyncio, 'get_event_loop', MagicMock(return_value=loop)) as get_event_loop_mock:
+            run_server.run(host, port, shell_host, shell_port, config_file, log,
                            application_factory=app_factory,
                            config_factory=config_factory,
                            config_source_factory=config_source_factory,
@@ -140,6 +145,7 @@ class GitlabHookServerTest(TestCase):
                            telnet_shell_factory=telnet_shell_factory,
                            telnet_server_factory=telnet_server_factory)
 
+        init_logging_mock.assert_called_once_with(log, config.get('name'))
         get_event_loop_mock.assert_called_once_with()
         app_factory.assert_called_once_with()
         config_source_factory.assert_called_once_with(config_file)
@@ -163,12 +169,10 @@ class GitlabHookServerTest(TestCase):
         parser = MagicMock()
         parser.parse_args = MagicMock(return_value=args)
 
-        with patch.object(run_server, 'init_logging') as init_logging_mock,\
-             patch.object(run_server, 'run') as run_mock,\
-             patch.object(run_server.argparse, 'ArgumentParser', MagicMock(return_value=parser)) as ArgumentParserMock:
+        with patch.object(run_server, 'run') as run_mock,\
+             patch.object(run_server.configargparse, 'ArgParser', MagicMock(return_value=parser)) as ArgumentParserMock:
             run_server.main()
 
         ArgumentParserMock.assert_called_once_with(description=ANY)
         parser.parse_args.assert_called_once_with()
-        init_logging_mock.assert_called_once_with(args.log)
-        run_mock.assert_called_once_with(args.host, args.port, args.shell_host, args.shell_port, args.config)
+        run_mock.assert_called_once_with(args.host, args.port, args.shell_host, args.shell_port, args.config, args.log)

@@ -16,7 +16,7 @@ def uncaught_exception(exctype, value, tb):
         logger.critical('uncaught_exception', name=exctype.__name__, args=value.args, exc_info=True)
 
 
-def init_logging(log_dir):
+def init_logging(log_dir, name):
     if not os.path.exists(log_dir):
         os.mkdir(log_dir)
     logging.config.dictConfig({
@@ -41,7 +41,7 @@ def init_logging(log_dir):
             'file': {
                 'level': 'DEBUG',
                 'class': 'logging.handlers.WatchedFileHandler',
-                'filename': os.path.join(log_dir, 'server.log'),
+                'filename': os.path.join(log_dir, '{}.log'.format(name)),
                 'formatter': 'plain',
             },
         },

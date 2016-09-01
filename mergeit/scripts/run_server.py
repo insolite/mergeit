@@ -38,7 +38,7 @@ def gitlab_push(request, config):
     return web.Response()
 
 
-def run(host, port, shell_host, shell_port, project_config,
+def run(host, port, shell_host, shell_port, project_config, log,
         application_factory=web.Application,
         config_factory=Config,
         config_source_factory=YamlFileConfigSource,
@@ -51,6 +51,7 @@ def run(host, port, shell_host, shell_port, project_config,
     loop = asyncio.get_event_loop()
     app = application_factory()
     config = config_factory(config_source_factory(project_config))
+    init_logging(log, config.get('name'))
     app.router.add_route('POST', '/push', lambda request: gitlab_push(request, config))
     logger.info('application_start')
     loop.run_until_complete(loop.create_server(app.make_handler(), host, port))
@@ -80,8 +81,7 @@ def main():
     parser.add_argument('-c', '--config', type=str, help='Config file')
     parser.add_argument('-l', '--log', type=str, default='/var/log/mergeit', help='Logs dir')
     args = parser.parse_args()
-    init_logging(args.log)
-    run(args.host, args.port, args.shell_host, args.shell_port, args.config)
+    run(args.host, args.port, args.shell_host, args.shell_port, args.config, args.log)
 
 
 if __name__ == '__main__':
