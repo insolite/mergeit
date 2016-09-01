@@ -8,8 +8,9 @@ from mergeit.core.config.yaml_config_source import YamlFileConfigSource
 from mergeit.scripts.common import init_logging
 
 
-def run(project_config):
+def run(project_config, log):
     config = Config(YamlFileConfigSource(project_config))
+    init_logging(log, config.get('name'))
     shell = MergeitShell(config=config, push_handler_factory=PushHandler, repo_manager_factory=RepoManager, forward=False)
     try:
         shell.cmdloop()
@@ -23,8 +24,7 @@ def main():
     parser.add_argument('-l', '--log', type=str, default='/var/log/mergeit',
                         help='Logs dir')
     args = parser.parse_args()
-    init_logging(args.log)
-    run(args.config)
+    run(args.config, args.log)
 
 
 if __name__ == '__main__':
