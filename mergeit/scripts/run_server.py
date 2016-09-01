@@ -1,4 +1,3 @@
-import argparse
 import asyncio
 import json
 import logging.config
@@ -8,6 +7,7 @@ from structlog import get_logger
 import telnetlib3
 from telnetlib3 import TelnetServer
 from telnetlib3.telsh import TelnetShellStream
+import configargparse
 
 from mergeit.core.config.config import Config
 from mergeit.core.config.yaml_config_source import YamlFileConfigSource
@@ -71,7 +71,8 @@ def run(host, port, shell_host, shell_port, project_config,
 
 
 def main():
-    parser = argparse.ArgumentParser(description='mergeit hook server')
+    parser = configargparse.ArgParser(description='mergeit hook server')
+    parser.add_argument('-sc', '--server-config', is_config_file=True, help='Server config')
     parser.add_argument('-H', '--host', type=str, default='*', help='Listen host')
     parser.add_argument('-p', '--port', type=int, default=1234, help='Listen port')
     parser.add_argument('-sh', '--shell-host', type=str, default='*', help='Shell listen host')

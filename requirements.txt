@@ -5,3 +5,4 @@ aiohttp
 asynctest
 structlog[dev]
 telnetlib3
+ConfigArgParse
