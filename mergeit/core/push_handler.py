@@ -33,7 +33,7 @@ class PushHandler():
                 module_name, class_name = runner_kwargs.pop('module').rsplit('.', 1)
                 module = import_module(module_name)
                 runner_class = getattr(module, class_name)
-                runner_kwargs = {key: val.format(**variables) if isinstance(val, str) else val
+                runner_kwargs = {key: val.format(**SafeDict(variables)) if isinstance(val, str) else val
                                  for key, val in runner_kwargs.items()}
                 dst[name] = runner_class(self, **runner_kwargs)
 

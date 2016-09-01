@@ -12,7 +12,7 @@ class NextVersionFilter(Filter):
         return version
 
     def run(self, source_match, source_branch, target_branch):
-        branches = sorted(self.push_handler.get_branches(remote=True),
+        branches = sorted(self.push_handler.repo_manager.get_branches(remote=True),
                           key=lambda x: self.get_version(x))
         try:
             return branches[branches.index(source_branch) + 1]
