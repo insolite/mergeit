@@ -65,7 +65,7 @@ Run hook handle server:
 
 .. code-block:: bash
 
-    mergeit -H 0.0.0.0 -p 1234 -sh 0.0.0.0 -sp 1235 -c config_samples/full.yaml -l test.log
+    mergeit -H 0.0.0.0 -p 1234 -sh 0.0.0.0 -sp 1235 -c config_samples/full.yaml -l test-repo
 
 Display help:
 
