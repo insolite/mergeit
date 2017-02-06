@@ -2,7 +2,6 @@ pyyaml
 requests
 gitpython
 aiohttp
-asynctest
 structlog[dev]
 telnetlib3
 ConfigArgParse

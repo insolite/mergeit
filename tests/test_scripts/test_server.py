@@ -6,7 +6,7 @@ from unittest.mock import MagicMock, patch, ANY, call
 from aiohttp import web
 from asynctest.mock import CoroutineMock
 
-from mergeit.scripts import run_server
+from mergeit.scripts import server
 
 
 class GitlabHookServerTest(TestCase):
@@ -29,11 +29,11 @@ class GitlabHookServerTest(TestCase):
             {'ref': 'refs/heads/{}'.format(branch),
              'commits': commits}).encode())
 
-        with patch.object(run_server.asyncio, 'get_event_loop', MagicMock(return_value=loop_mock)) as get_event_loop_mock,\
-             patch.object(run_server, 'PushHandler') as PushHandlerMock, \
-             patch.object(run_server, 'RepoManager') as RepoManagerMock:
+        with patch.object(server.asyncio, 'get_event_loop', MagicMock(return_value=loop_mock)) as get_event_loop_mock,\
+             patch.object(server, 'PushHandler') as PushHandlerMock, \
+             patch.object(server, 'RepoManager') as RepoManagerMock:
                  response = self.loop.run_until_complete(
-                     run_server.gitlab_push(request_mock, config_mock))
+                     server.gitlab_push(request_mock, config_mock))
 
         get_event_loop_mock.assert_called_once_with()
         self.assertIsInstance(response, web.Response)
@@ -69,23 +69,23 @@ class GitlabHookServerTest(TestCase):
         config_source = MagicMock()
         config_source_factory = MagicMock(return_value=config_source)
         app_handler = MagicMock()
-        server = MagicMock()
+        hook_server = MagicMock()
         telnet_server = MagicMock()
         app.make_handler = MagicMock(return_value=app_handler)
-        loop.create_server = MagicMock(side_effect=[server, telnet_server])
+        loop.create_server = MagicMock(side_effect=[hook_server, telnet_server])
         loop.run_forever = MagicMock()
 
-        with patch.object(run_server, 'init_logging') as init_logging_mock,\
-             patch.object(run_server.asyncio, 'get_event_loop', MagicMock(return_value=loop)) as get_event_loop_mock:
-            run_server.run(host, port, shell_host, shell_port, config_file, log,
-                           application_factory=app_factory,
-                           config_factory=config_factory,
-                           config_source_factory=config_source_factory,
-                           push_handler_factory=push_handler_factory,
-                           repo_manager_factory=repo_manager_factory,
-                           cmd_factory=cmd_factory,
-                           telnet_shell_factory=telnet_shell_factory,
-                           telnet_server_factory=telnet_server_factory)
+        with patch.object(server, 'init_logging') as init_logging_mock,\
+             patch.object(server.asyncio, 'get_event_loop', MagicMock(return_value=loop)) as get_event_loop_mock:
+            server.run(host, port, shell_host, shell_port, config_file, log,
+                       application_factory=app_factory,
+                       config_factory=config_factory,
+                       config_source_factory=config_source_factory,
+                       push_handler_factory=push_handler_factory,
+                       repo_manager_factory=repo_manager_factory,
+                       cmd_factory=cmd_factory,
+                       telnet_shell_factory=telnet_shell_factory,
+                       telnet_server_factory=telnet_server_factory)
 
         init_logging_mock.assert_called_once_with(log, config.get('name'))
         get_event_loop_mock.assert_called_once_with()
@@ -101,7 +101,7 @@ class GitlabHookServerTest(TestCase):
         loop.create_server.assert_has_calls([call(app_handler, host, port),
                                              call(ANY, shell_host, shell_port)], # TODO: ANY - server
                                             any_order=True)
-        loop.run_until_complete.assert_has_calls([call(server),
+        loop.run_until_complete.assert_has_calls([call(hook_server),
                                                   call(telnet_server)],
                                                  any_order=True)
         loop.run_forever.assert_called_once_with()
@@ -127,23 +127,23 @@ class GitlabHookServerTest(TestCase):
         config_source = MagicMock()
         config_source_factory = MagicMock(return_value=config_source)
         app_handler = MagicMock()
-        server = MagicMock()
+        hook_server = MagicMock()
         telnet_server = MagicMock()
         app.make_handler = MagicMock(return_value=app_handler)
-        loop.create_server = MagicMock(side_effect=[server, telnet_server])
+        loop.create_server = MagicMock(side_effect=[hook_server, telnet_server])
         loop.run_forever = MagicMock(side_effect=KeyboardInterrupt)
 
-        with patch.object(run_server, 'init_logging') as init_logging_mock,\
-             patch.object(run_server.asyncio, 'get_event_loop', MagicMock(return_value=loop)) as get_event_loop_mock:
-            run_server.run(host, port, shell_host, shell_port, config_file, log,
-                           application_factory=app_factory,
-                           config_factory=config_factory,
-                           config_source_factory=config_source_factory,
-                           push_handler_factory=push_handler_factory,
-                           repo_manager_factory=repo_manager_factory,
-                           cmd_factory=cmd_factory,
-                           telnet_shell_factory=telnet_shell_factory,
-                           telnet_server_factory=telnet_server_factory)
+        with patch.object(server, 'init_logging') as init_logging_mock,\
+             patch.object(server.asyncio, 'get_event_loop', MagicMock(return_value=loop)) as get_event_loop_mock:
+            server.run(host, port, shell_host, shell_port, config_file, log,
+                       application_factory=app_factory,
+                       config_factory=config_factory,
+                       config_source_factory=config_source_factory,
+                       push_handler_factory=push_handler_factory,
+                       repo_manager_factory=repo_manager_factory,
+                       cmd_factory=cmd_factory,
+                       telnet_shell_factory=telnet_shell_factory,
+                       telnet_server_factory=telnet_server_factory)
 
         init_logging_mock.assert_called_once_with(log, config.get('name'))
         get_event_loop_mock.assert_called_once_with()
@@ -159,7 +159,7 @@ class GitlabHookServerTest(TestCase):
         loop.create_server.assert_has_calls([call(app_handler, host, port),
                                              call(ANY, shell_host, shell_port)], # TODO: ANY - server
                                             any_order=True)
-        loop.run_until_complete.assert_has_calls([call(server),
+        loop.run_until_complete.assert_has_calls([call(hook_server),
                                                   call(telnet_server)],
                                                  any_order=True)
         loop.run_forever.assert_called_once_with()
@@ -169,9 +169,9 @@ class GitlabHookServerTest(TestCase):
         parser = MagicMock()
         parser.parse_args = MagicMock(return_value=args)
 
-        with patch.object(run_server, 'run') as run_mock,\
-             patch.object(run_server.configargparse, 'ArgParser', MagicMock(return_value=parser)) as ArgumentParserMock:
-            run_server.main()
+        with patch.object(server, 'run') as run_mock,\
+             patch.object(server.configargparse, 'ArgParser', MagicMock(return_value=parser)) as ArgumentParserMock:
+            server.main()
 
         ArgumentParserMock.assert_called_once_with(description=ANY)
         parser.parse_args.assert_called_once_with()

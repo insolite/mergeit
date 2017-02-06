@@ -3,7 +3,7 @@ import unittest
 from time import time
 from unittest.mock import MagicMock
 
-from mergeit.scripts.run_server import init_logging
+from mergeit.scripts.server import init_logging
 
 
 class ResponseMock(MagicMock):
