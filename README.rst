@@ -4,6 +4,14 @@ merGeIT
 
 GIT auto merge tool
 
+.. image:: https://travis-ci.org/insolite/mergeit.svg?branch=master
+  :target: https://travis-ci.org/insolite/mergeit
+  :alt: Build status
+
+.. image:: https://codecov.io/github/insolite/mergeit/branch/master/graph/badge.svg
+  :target: https://codecov.io/github/insolite/mergeit
+  :alt: Test coverage
+
 Overview
 ========
 
