@@ -35,7 +35,6 @@ setup(
     entry_points={
         'console_scripts': [
             '{} = {}.scripts.server:main'.format(hyphen_package_name, package_name),
-            '{} = {}.scripts.server:main'.format(hyphen_package_name, package_name),
             '{}-shell = {}.scripts.shell:main'.format(hyphen_package_name, package_name),
         ],
     },
