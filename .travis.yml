@@ -16,5 +16,5 @@ install:
 script:
   - git config --global user.email "mergeit@localhost"
   - git config --global user.name "mergeit"
-  - python -m unittest discover tests
+  - coverage run -m unittest discover tests
   - codecov
